@@ -7,8 +7,8 @@
     "prebuild": "rm -rf dist/* && tsc",
     "build": "tsc && cp -rf package.json dist/package.json",
     "prestart": "npm run build",
-    "start": "ts-node .",
-    "heroku-postbuild": "cd ./feedback-form && npm install && npm run build"
+    "start": "node ./dist",
+    "dev": "ts-node ."
   },
   "keywords": [],
   "author": "",
