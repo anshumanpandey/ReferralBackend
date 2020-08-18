@@ -7,7 +7,7 @@
     "prebuild": "rm -rf dist/* && ./node_modules/.bin/tsc",
     "build": "tsc && cp -rf package.json dist/package.json",
     "prestart": "npm run build",
-    "start": "node ./dist",
+    "start": "node ./dist/index.js",
     "dev": "ts-node ."
   },
   "keywords": [],
