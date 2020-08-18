@@ -22,7 +22,7 @@ interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
 
 interface UserInstance extends Model<UserAttributes, UserCreationAttributes>, UserAttributes{}
 
-const roleKeys = Object.values(USER_ROLE_ENUM).filter(k => !Number.isInteger(k)) as string[]
+export const RoleKeys = Object.values(USER_ROLE_ENUM).filter(k => !Number.isInteger(k)) as string[]
 
 export const UserModel = sequelize.define<UserInstance>("User", {
     // Model attributes are defined here
@@ -57,6 +57,6 @@ export const UserModel = sequelize.define<UserInstance>("User", {
       defaultValue: false
     },
     role: {
-      type: DataTypes.ENUM(...roleKeys)
+      type: DataTypes.ENUM(...RoleKeys)
     }
 })

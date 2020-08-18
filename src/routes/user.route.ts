@@ -5,7 +5,7 @@ import { Op } from "sequelize"
 import { checkSchema } from "express-validator"
 import { sign } from 'jsonwebtoken'
 import { hash, compare } from "bcrypt"
-import { UserModel } from '../models/user.model';
+import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { validateParams } from '../middlewares/routeValidation.middleware';
 import { ApiError } from '../utils/ApiError';
 import { sendForgotPassword } from '../utils/Mail';
@@ -65,6 +65,39 @@ userRoutes.post('/login', validateParams(checkSchema({
 }));
 
 userRoutes.post('/createPartner', validateParams(checkSchema({
+  companyName: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    trim: true
+  },
+  address: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    trim: true
+  },
+  pluginKey: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    trim: true
+  },
   email: {
     in: ['body'],
     exists: {
@@ -75,22 +108,29 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
       negated: true
     },
     trim: true
-  }
+  },
+  password: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    trim: true
+  },
 })), asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const { email, password } = req.body;
   const user = await UserModel.findOne({
     where: { email },
     attributes: { exclude: ["createdAt", "updatedAt"]}
   });
 
-  if (!user) throw new ApiError("Email not registered")
+  if (user) throw new ApiError("Email registered")
 
-  const password = Math.random().toString(36).substr(2, 5)
-
-  await user.update({ password: await hash(password, 8) })
-  //@ts-expect-error
-  await sendForgotPassword({email, password })
-  res.send({ success: 'Mail sended' });
+  const p = await UserModel.create({ ...req.body, password: await hash(password, 8), role: USER_ROLE_ENUM.PARTNER })
+  res.send({ id: p.id });
 }));
 
 
