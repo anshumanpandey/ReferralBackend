@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.env
+*.sqlite
+uploads/*
+!uploads/.gitkeep
+profilePic/*
+!profilePic/.gitkeep
