@@ -120,7 +120,7 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
     },
     trim: true
   },
-})), asyncHandler(async (req, res) => {
+})), jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await UserModel.findOne({
     where: { email },
