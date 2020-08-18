@@ -66,7 +66,7 @@ userRoutes.post('/login', validateParams(checkSchema({
 
 userRoutes.get('/get', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
-  res.send(await UserModel.findByPk(req.user.id));
+  res.send(await UserModel.findByPk(req.user.id, { attributes: { exclude: ["password"]}}));
 }));
 
 userRoutes.post('/createPartner', validateParams(checkSchema({

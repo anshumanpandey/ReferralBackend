@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 
 import { DataTypes, Model,Optional } from "sequelize";
+import { ReferralProgramModel } from "./referralProgram.model";
 
 export enum USER_ROLE_ENUM {
   PARTNER = "Partner",
@@ -60,3 +61,10 @@ export const UserModel = sequelize.define<UserInstance>("User", {
       type: DataTypes.ENUM(...RoleKeys)
     }
 })
+
+UserModel.hasMany(ReferralProgramModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+ReferralProgramModel.belongsTo(UserModel);
