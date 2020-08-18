@@ -64,6 +64,11 @@ userRoutes.post('/login', validateParams(checkSchema({
   res.send({ ...jsonData, token });
 }));
 
+userRoutes.get('/get', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+  //@ts-expect-error
+  res.send(await UserModel.findByPk(req.user.id));
+}));
+
 userRoutes.post('/createPartner', validateParams(checkSchema({
   companyName: {
     in: ['body'],
@@ -127,10 +132,23 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
     attributes: { exclude: ["createdAt", "updatedAt"]}
   });
 
-  if (user) throw new ApiError("Email registered")
 
-  const p = await UserModel.create({ ...req.body, password: await hash(password, 8), role: USER_ROLE_ENUM.PARTNER })
-  res.send({ id: p.id });
+  if (req.body.id) {
+    let pass = null
+    if (req.body.password) {
+      pass = await hash(password, 8)
+    }
+    await UserModel.update({ ...req.body, password: pass ? pass : undefined }, { where: { id: req.body.id }})
+    res.send({ id: req.body.id });
+  } else {
+    if (user) throw new ApiError("Email registered")
+    const p = await UserModel.create({ ...req.body, password: await hash(password, 8), role: USER_ROLE_ENUM.PARTNER })
+    res.send({ id: p.id });
+  }
+}));
+
+userRoutes.get('/getPartners', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+  res.send(await UserModel.findAll({ attributes: { exclude: ["password"]},where: { role: { [Op.not]: USER_ROLE_ENUM.SUPER_ADMIN }}}));
 }));
 
 
