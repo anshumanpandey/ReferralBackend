@@ -116,13 +116,6 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
   },
   password: {
     in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
     trim: true
   },
 })), jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
@@ -141,6 +134,7 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
     await UserModel.update({ ...req.body, password: pass ? pass : undefined }, { where: { id: req.body.id }})
     res.send({ id: req.body.id });
   } else {
+    if (!password) throw new ApiError("Missing password")
     if (user) throw new ApiError("Email registered")
     const p = await UserModel.create({ ...req.body, password: await hash(password, 8), role: USER_ROLE_ENUM.PARTNER })
     res.send({ id: p.id });
