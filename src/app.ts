@@ -4,6 +4,7 @@ import * as bodyParser from 'body-parser';
 import sequelize from './utils/DB';
 import { routes } from './routes';
 import { ApiError } from './utils/ApiError';
+import { SeedSuperadmin } from './utils/Seeder';
 var morgan = require('morgan')
 
 const app = express();
@@ -53,6 +54,7 @@ app.use((err:any, req: express.Request, res: express.Response, next: express.Nex
 
 const bootstrap = () => {
     return sequelize.authenticate()
+    .then(() => SeedSuperadmin())
 }
 
 export {

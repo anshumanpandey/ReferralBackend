@@ -4,7 +4,7 @@ import path from "path";
 
 let sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '..', '..', 'passport-db.sqlite'),
+  storage: path.join(__dirname, '..', '..', 'referral-db.sqlite'),
 });
 
 if (process.env.DB_DIALECT) {
