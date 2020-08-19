@@ -1,8 +1,5 @@
 import express from 'express';
 var jwt = require('express-jwt');
-var guard = require('express-jwt-permissions')({
-  permissionsProperty: 'role'
-})
 import asyncHandler from "express-async-handler"
 import { checkSchema } from "express-validator"
 import { validateParams } from '../middlewares/routeValidation.middleware';
@@ -13,12 +10,12 @@ import { USER_ROLE_ENUM } from '../models/user.model';
 
 export const referralProgramRoutes = express();
 
-referralProgramRoutes.get('/', guard.check(USER_ROLE_ENUM.SUPER_ADMIN),jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
   res.send(await ReferralProgramModel.findAll({ where: { UserId: req.user.id },include: [{ model: SocialShareModel }]}));
 }));
 
-referralProgramRoutes.post('/', guard.check(USER_ROLE_ENUM.SUPER_ADMIN),jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
+referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
   name: {
     in: ['body'],
     exists: {

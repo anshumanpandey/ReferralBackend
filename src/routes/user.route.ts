@@ -1,5 +1,8 @@
 import express from 'express';
 var jwt = require('express-jwt');
+var guard = require('express-jwt-permissions')({
+  permissionsProperty: 'role'
+})
 import asyncHandler from "express-async-handler"
 import { Op } from "sequelize"
 import { checkSchema } from "express-validator"
@@ -118,7 +121,7 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
     in: ['body'],
     trim: true
   },
-})), jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+})), jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), guard.check(USER_ROLE_ENUM.SUPER_ADMIN), asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const user = await UserModel.findOne({
     where: { email },
@@ -141,7 +144,7 @@ userRoutes.post('/createPartner', validateParams(checkSchema({
   }
 }));
 
-userRoutes.get('/getPartners', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+userRoutes.get('/getPartners', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), guard.check(USER_ROLE_ENUM.SUPER_ADMIN),asyncHandler(async (req, res) => {
   res.send(await UserModel.findAll({ attributes: { exclude: ["password"]},where: { role: { [Op.not]: USER_ROLE_ENUM.SUPER_ADMIN }}}));
 }));
 
