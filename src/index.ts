@@ -2,9 +2,11 @@ require('dotenv').config()
 import {app, bootstrap} from './app'
 import {AddressInfo} from 'net'
 import sequelize from './utils/DB';
+import { SeedSuperadmin } from './utils/Seeder';
 
 bootstrap()
 .then(() => sequelize.sync())
+.then(() => SeedSuperadmin())
 .then(() => {
     const server = app.listen(parseInt(process.env.PORT || '5000') || 5000, '0.0.0.0', () => {
         const {port, address} = server.address() as AddressInfo;
