@@ -58,6 +58,7 @@ userRoutes.post('/login', validateParams(checkSchema({
   });
 
   if (!user) throw new ApiError("User not found")
+  if (user.isDisabled) throw new ApiError("Account disabled")
   if (!await compare(password, user.password)) throw new ApiError("Email or password incorrect")
 
   const jsonData = user.toJSON();
