@@ -8,7 +8,8 @@ import { OrderPromotionKeys, OrderModel } from '../models/order.model';
 export const orderRoutes = express();
 
 orderRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  res.send(await OrderModel.findAll());
+  //@ts-expect-error
+  res.send(await OrderModel.findAll({ where: { UserId: req.user.id }}));
 }));
 
 orderRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
@@ -55,10 +56,12 @@ orderRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: 
       negated: true
     },
     isIn: {
-      options: OrderPromotionKeys
+      options: [OrderPromotionKeys],
+      errorMessage: `Valid options are ${OrderPromotionKeys.join(", ")}`
     }
   },
 })), asyncHandler(async (req, res) => {
-  const o = await OrderModel.create(req.body)
+  //@ts-expect-error
+  const o = await OrderModel.create({ ...req.body, UserId: req.user.id})
   res.send({ id: o.id });
 }));

@@ -38,7 +38,7 @@ export const OrderModel = sequelize.define<OrderInstance>("Order", {
     allowNull: false
   },
   orderAmount: {
-    type: DataTypes.FLOAT,
+    type: DataTypes.FLOAT(10, 2),
     allowNull: false
   },
   promotionMethod: {

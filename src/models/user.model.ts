@@ -2,6 +2,8 @@ import sequelize from "../utils/DB";
 
 import { DataTypes, Model,Optional } from "sequelize";
 import { ReferralProgramModel } from "./referralProgram.model";
+import { OrderModel } from "./order.model";
+import { RewardModel } from "./reward.model";
 
 export enum USER_ROLE_ENUM {
   PARTNER = "Partner",
@@ -68,3 +70,10 @@ UserModel.hasMany(ReferralProgramModel, {
   }
 });
 ReferralProgramModel.belongsTo(UserModel);
+
+UserModel.hasMany(OrderModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+OrderModel.belongsTo(UserModel);

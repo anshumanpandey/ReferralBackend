@@ -33,11 +33,15 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
    if (hasActive) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
   }
   if (req.body.id) {
-    const o = await ReferralProgramModel.update(req.body, { where: { id: req.body.id }})
+    await ReferralProgramModel.update(req.body, { where: { id: req.body.id }})
+    //@ts-expect-error
+    await SocialShareModel.destroy({ where: { ReferralProgramId: req.body.id } })
+    await SocialShareModel.bulkCreate(req.body.SocialShares.map((s:any) => ({ ...s, ReferralProgramId: req.body.id })))
     res.send({ id: req.body.id });
   } else {
     //@ts-expect-error
     const o = await ReferralProgramModel.create({ ...req.body, UserId: req.user.id})
+    await SocialShareModel.bulkCreate({ ...req.body.SocialShares, ReferralProgramId: o.id })
     res.send({ id: o.id });
   }
 }));

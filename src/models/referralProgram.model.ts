@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 import { DataTypes, Model, Optional } from "sequelize";
 import { SocialShareModel } from "./socialShare.model";
+import { RewardModel } from "./reward.model";
 
 interface ReferralProgramAttributes {
   id: string,
@@ -46,3 +47,10 @@ ReferralProgramModel.hasMany(SocialShareModel, {
   }
 });
 SocialShareModel.belongsTo(ReferralProgramModel);
+
+ReferralProgramModel.hasMany(RewardModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+RewardModel.belongsTo(ReferralProgramModel);

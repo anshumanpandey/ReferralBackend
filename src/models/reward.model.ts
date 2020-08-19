@@ -3,9 +3,10 @@ import { DataTypes, Model, Optional } from "sequelize";
 import { GiftModel } from "./gift.model";
 
 export enum REWARD_TYPE_ENUM {
-  STORED_CREDIT = "stored_credit",
+  STORED_CREDIT = "Stored_credit",
   GIFT = "Gift",
-  FREE_PRODUCT = "Free_product"
+  FREE_PRODUCT = "Free_product",
+  DISCOUNT = "Discount"
 }
 
 interface RewardAttributes {
@@ -54,6 +55,7 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
   },
   freeDeliver: {
     type: DataTypes.BOOLEAN,
+    defaultValue: false
   },
 })
 
