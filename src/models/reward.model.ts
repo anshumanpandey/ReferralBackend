@@ -58,10 +58,3 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
     defaultValue: false
   },
 })
-
-RewardModel.hasMany(GiftModel, {
-  foreignKey: {
-    allowNull: false
-  }
-});
-GiftModel.belongsTo(RewardModel);

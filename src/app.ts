@@ -22,8 +22,7 @@ app.use(bodyParser.urlencoded({
     extended: true,
 }));
 
-app.use("/feedback",express.static(join(__dirname, '..', 'feedback-form', 'build')));
-app.use("/passport",express.static(join(__dirname, '..', 'uploads')));
+app.use("/shareImage",express.static(join(__dirname, '..', 'shareImage' )));
 app.use("/profilePic",express.static(join(__dirname, '..', 'profilePic')));
 app.use(express.static(join(__dirname, '../templates')));
 

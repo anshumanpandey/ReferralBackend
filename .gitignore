@@ -6,3 +6,5 @@ uploads/*
 !uploads/.gitkeep
 profilePic/*
 !profilePic/.gitkeep
+shareImage/*
+!shareImage/.gitkeep
