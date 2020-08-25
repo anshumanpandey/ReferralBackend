@@ -118,6 +118,15 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
     program.customerFreeProduct = ""
   }
 
+  if (program.friendRewardType != REWARD_TYPE_ENUM.DISCOUNT) {
+    program.friendDiscountAmount = ""
+    program.friendDiscountUnit = ""
+  }
+
+  if (program.friendRewardType != REWARD_TYPE_ENUM.FREE_PRODUCT) {
+    program.friendFreeProduct = ""
+  }
+
   await sequelize.transaction(async (transaction) => {
     let programId: any = null
     if (program.id) {
@@ -133,9 +142,9 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
       programId = o.id
     }
 
+    //@ts-expect-error
+    await GiftModel.destroy({ where: { ReferralProgramId: programId }, transaction })
     if (gift.length != 0) {
-      //@ts-expect-error
-      await GiftModel.destroy({ where: { ReferralProgramId: programId }, transaction })
       await GiftModel.bulkCreate(gift.map((g: any) => ({ ...g, ReferralProgramId: programId })), { transaction })
     }
 
