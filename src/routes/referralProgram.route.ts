@@ -22,7 +22,7 @@ var upload = multer({ storage, limits: { fieldSize } })
 
 export const referralProgramRoutes = express();
 
-referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+referralProgramRoutes.get('/', asyncHandler(async (req, res) => {
   //@ts-expect-error
   res.send(await ReferralProgramModel.findAll({ where: { UserId: req.user.id }, include: [{ model: GiftModel }] }));
 }));
