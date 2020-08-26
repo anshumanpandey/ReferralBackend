@@ -8,7 +8,6 @@ interface CustomerAttributes {
   firstname: string,
   lastname: string,
   referral_code: string,
-  parterKey: string,
 }
 
 interface UserCreationAttributes extends Optional<CustomerAttributes, "id"> {}
@@ -31,10 +30,6 @@ export const CustomerModel = sequelize.define<CustomerInstance>("Customer", {
       allowNull: false
     },
     referral_code: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    parterKey: {
       type: DataTypes.STRING,
       allowNull: false
     },
