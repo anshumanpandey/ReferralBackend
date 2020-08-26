@@ -16,7 +16,7 @@ productRoutes.get('/:pluginKey', asyncHandler(async (req, res) => {
 }));
 
 productRoutes.post('/', validateParams(checkSchema({
-  name: {
+  "products.*.id": {
     in: ['body'],
     exists: {
       errorMessage: 'Missing field'
@@ -26,6 +26,28 @@ productRoutes.post('/', validateParams(checkSchema({
       negated: true
     },
     trim: true
+  },
+  "products.*.name": {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    trim: true
+  },
+  products: {
+    isArray: true,
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
   },
   pluginKey: {
     in: ['body'],
@@ -41,6 +63,6 @@ productRoutes.post('/', validateParams(checkSchema({
 })), asyncHandler(async (req, res) => {
   const user = await UserModel.findOne({ where: { pluginKey: req.body.pluginKey }})
   if (!user) throw new ApiError('Invalid plugin key')
-  const o = await ProductModel.create({ ...req.body, UserId: user.id })
-  res.send({ id: o.id });
+  const o = await ProductModel.bulkCreate(req.body.products.map((p: any) => ({ name: p.name, id: p.id, UserId: user.id })))
+  res.send(o.map(p => p.id));
 }));

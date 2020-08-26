@@ -9,8 +9,7 @@ var cors = require('cors')
 
 const app = express();
 
-app.use(cors())
-app.use(morgan("tiny"))
+
 app.use(bodyParser.json({
     limit: '50mb',
     verify(req: any, res, buf, encoding) {
@@ -21,6 +20,8 @@ app.use(bodyParser.urlencoded({
     limit: '50mb',
     extended: true,
 }));
+app.use(cors())
+app.use(morgan("tiny"))
 
 app.use("/shareImage",express.static(join(__dirname, '..', 'shareImage' )));
 app.use("/profilePic",express.static(join(__dirname, '..', 'profilePic')));
