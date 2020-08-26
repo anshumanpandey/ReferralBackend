@@ -48,6 +48,17 @@ orderRoutes.post('/', validateParams(checkSchema({
     },
     isFloat: true,
   },
+  referredCustomer: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    isFloat: true,
+  },
   pluginKey: {
     in: ['body'],
     exists: {

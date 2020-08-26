@@ -13,6 +13,7 @@ interface OrderAttributes {
   customer: string,
   sponsor: string,
   orderAmount: number,
+  referredCustomer: string,
   promotionMethod: ORDER_PROMOTION_ENUM,
 }
 
@@ -39,6 +40,10 @@ export const OrderModel = sequelize.define<OrderInstance>("Order", {
   },
   orderAmount: {
     type: DataTypes.FLOAT(10, 2),
+    allowNull: false
+  },
+  referredCustomer: {
+    type: DataTypes.STRING,
     allowNull: false
   },
   promotionMethod: {
