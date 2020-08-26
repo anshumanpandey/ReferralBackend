@@ -72,12 +72,12 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
   if (req.body.socialMediaImage) promotions.push(PROMOTION_ENUM.SOCIAL_MEDIA_IMAGE)
   if (req.body.emailPromotion) promotions.push(PROMOTION_ENUM.EMAIL)
 
-  const program = {
+  const program: any = {
     id: req.body.id,
     name: req.body.name,
     isActive: req.body.isActive,
     endDate: req.body.endDate,
-    emailTemplate: req.body.emailTemplate,
+    emailTemplate: req.body.emailTemplate || null,
     creditToAward: req.body.creditToAward,
 
     customerMaxStoreCredit: req.body.maxCreditPerCustomer,
@@ -96,10 +96,14 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
 
     gifts: req.body.gifts,
 
-    imgUrl: req.file ? `${req.protocol + '://' + req.get('host')}/shareImage/${req.file.filename}` : undefined,
-
     //@ts-expect-error
     UserId: req.user.id
+  }
+
+  if (req.body.socialMediaImage == "true") {
+    program.imgUrl = req.file ? `${req.protocol + '://' + req.get('host')}/shareImage/${req.file.filename}` : undefined
+  } else {
+    program.imgUrl = null
   }
 
   const gift: any[] = []
@@ -130,14 +134,12 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
   await sequelize.transaction(async (transaction) => {
     let programId: any = null
     if (program.id) {
-      //@ts-expect-error
       const fieldsToUpdate = Object.keys(program).filter(k => program[k] !== undefined)
       //@ts-expect-error
       await ReferralProgramModel.update(program, { fields: fieldsToUpdate, where: { id: program.id }, transaction })
 
       programId = program.id
     } else {
-      //@ts-expect-error
       const o = await ReferralProgramModel.create(program, { transaction })
       programId = o.id
     }

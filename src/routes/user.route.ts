@@ -162,3 +162,8 @@ userRoutes.post('/getUser', jwt({ secret: process.env.JWT_SECRET || 'aa', algori
   //@ts-expect-error
   res.send(await UserModel.findByPk(req.user.id));
 }));
+
+userRoutes.get('/validate/:key', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+  const user = await UserModel.findOne({ where: { pluginKey: req.params.key}})
+  res.send({ valid: user != null });
+}));
