@@ -4,6 +4,7 @@ import { orderRoutes } from './order.route';
 import { rewardRoutes } from './reward.route';
 import { referralProgramRoutes } from './referralProgram.route';
 import { productRoutes } from './product.route';
+import { customerRoutes } from './customer.route';
 
 export const routes = express();
 
@@ -12,3 +13,4 @@ routes.use("/order",orderRoutes)
 routes.use("/reward", rewardRoutes)
 routes.use("/referralProgram", referralProgramRoutes)
 routes.use("/product", productRoutes)
+routes.use("/customer", customerRoutes)
