@@ -8,12 +8,18 @@ import { ApiError } from '../utils/ApiError';
 import { GiftModel } from '../models/gift.model';
 import sequelize from '../utils/DB';
 import { ReferralProgramModel } from '../models/referralProgram.model';
+import { CustomerModel } from '../models/customer.model';
 
 export const rewardRoutes = express();
 
 rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
   res.send(await RewardModel.findAll({ include: [{ model: GiftModel}, { model: ReferralProgramModel, where: { UserId: req.user.id}}] }));
+}));
+
+rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
+  //@ts-expect-error
+  res.send(await RewardModel.findAll({ where: { "$Customer.referral_code$": req.params.code }, include: [{ model: CustomerModel } ] }));
 }));
 
 rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({

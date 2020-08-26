@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 
 import { DataTypes, Model,Optional } from "sequelize";
+import { RewardModel } from "./reward.model";
 
 interface CustomerAttributes {
   id: string,
@@ -38,3 +39,10 @@ export const CustomerModel = sequelize.define<CustomerInstance>("Customer", {
       allowNull: false
     },
 })
+
+CustomerModel.hasMany(RewardModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+RewardModel.belongsTo(CustomerModel);
