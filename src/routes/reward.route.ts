@@ -9,6 +9,7 @@ import { GiftModel } from '../models/gift.model';
 import sequelize from '../utils/DB';
 import { ReferralProgramModel } from '../models/referralProgram.model';
 import { CustomerModel } from '../models/customer.model';
+import PluginKeyExist from '../utils/PluginKeyExist';
 
 export const rewardRoutes = express();
 
@@ -18,6 +19,7 @@ rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: 
 }));
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
+  if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
   //@ts-expect-error
   res.send(await RewardModel.findAll({ where: { "$Customer.referral_code$": req.params.code }, include: [{ model: CustomerModel } ] }));
 }));

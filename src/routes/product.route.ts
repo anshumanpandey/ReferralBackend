@@ -49,20 +49,13 @@ productRoutes.post('/', validateParams(checkSchema({
       negated: true
     },
   },
-  pluginKey: {
-    in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    trim: true
-  },
 })), asyncHandler(async (req, res) => {
-  const user = await UserModel.findOne({ where: { pluginKey: req.body.pluginKey }})
+  const user = await UserModel.findOne({ where: { pluginKey: req.query.pluginKey }})
   if (!user) throw new ApiError('Invalid plugin key')
+
+  const products = await ProductModel.findAll({ where: { id: req.body.products.map((p: any) => p.id) }})
+  if (products.length != 0) throw new ApiError("Product ID already exist")
+
   const o = await ProductModel.bulkCreate(req.body.products.map((p: any) => ({ name: p.name, id: p.id, UserId: user.id })))
   res.send(o.map(p => p.id));
 }));

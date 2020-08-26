@@ -10,6 +10,7 @@ import sequelize from '../utils/DB';
 import multer from 'multer';
 import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { Op } from 'sequelize';
+import PluginKeyExist from '../utils/PluginKeyExist';
 
 let storage = multer.diskStorage({
   destination: 'shareImage/',
@@ -22,11 +23,12 @@ var upload = multer({ storage, limits: { fieldSize } })
 
 export const referralProgramRoutes = express();
 
-referralProgramRoutes.get('/program/:key', asyncHandler(async (req, res) => {
+referralProgramRoutes.get('/program/', asyncHandler(async (req, res) => {
+  if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
   //@ts-expect-error
-  const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.params.key, isActive: true }, include: [{ model: GiftModel }, { model: UserModel, attributes: [] }] })
-  if (program) throw new ApiError("Program not found")
-  res.send(program);
+  const program = await ReferralProgramModel.findAll({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{ model: GiftModel }, { model: UserModel, attributes: [] }] })
+  if (program.length == 0) throw new ApiError("Program not found")
+  res.send(program[0]);
 }));
 
 referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
