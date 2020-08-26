@@ -24,9 +24,9 @@ export const referralProgramRoutes = express();
 
 referralProgramRoutes.get('/program/:key', asyncHandler(async (req, res) => {
   //@ts-expect-error
-  const program = await ReferralProgramModel.findAll({ where: { "$User.pluginKey$": req.params.key }, include: [{ model: GiftModel }, { model: UserModel, attributes: [] }] })
-  if (program.length == 0) throw new ApiError("Program not found")
-  res.send(program[0]);
+  const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.params.key, isActive: true }, include: [{ model: GiftModel }, { model: UserModel, attributes: [] }] })
+  if (program) throw new ApiError("Program not found")
+  res.send(program);
 }));
 
 referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
