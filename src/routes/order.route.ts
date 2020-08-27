@@ -5,7 +5,7 @@ import { checkSchema } from "express-validator"
 import { validateParams } from '../middlewares/routeValidation.middleware';
 import { OrderPromotionKeys, OrderModel } from '../models/order.model';
 import { ApiError } from '../utils/ApiError';
-import { RewardModel } from '../models/reward.model';
+import { RewardModel, RewardTypeValues } from '../models/reward.model';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
 import MakeId from '../utils/MakeId';
