@@ -17,7 +17,8 @@ interface RewardAttributes {
   rewardType: REWARD_TYPE_ENUM
   discountAmount?: string
   discountUnit?: string
-  freeDeliver: boolean
+  freeDeliver: boolean,
+  couponCode: string,
 }
 
 interface RewardCreationAttributes extends Optional<RewardAttributes, "id"> { }
@@ -56,5 +57,8 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
   freeDeliver: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  couponCode: {
+    type: DataTypes.STRING,
   },
 })
