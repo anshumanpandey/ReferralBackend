@@ -67,8 +67,8 @@ orderRoutes.post('/', validateParams(checkSchema({
       negated: true
     },
     isIn: {
-      options: [OrderPromotionKeys],
-      errorMessage: `Valid options are ${OrderPromotionKeys.join(", ")}`
+      options: [RewardTypeValues],
+      errorMessage: `Valid options are ${RewardTypeValues.join(", ")}`
     }
   },
 })), asyncHandler(async (req, res) => {
