@@ -43,7 +43,21 @@ orderRoutes.post('/', validateParams(checkSchema({
       negated: true
     },
   },
-  promotionMethod: {
+  orderPromotionMethod: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+    isIn: {
+      options: [OrderPromotionKeys],
+      errorMessage: `Valid options are ${OrderPromotionKeys.join(", ")}`
+    }
+  },
+  rewardPromotionMethod: {
     in: ['body'],
     exists: {
       errorMessage: 'Missing field'
@@ -82,7 +96,7 @@ orderRoutes.post('/', validateParams(checkSchema({
         if (!reward) {
           await RewardModel.create({
             CustomerId: referredCustomer.id,
-            rewardType: req.body.promotionMethod,
+            rewardType: req.body.rewardPromotionMethod,
             claimed: false,
             rewardCode: MakeId(),
             ...req.body,
