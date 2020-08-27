@@ -10,10 +10,7 @@ export enum ORDER_PROMOTION_ENUM {
 
 interface OrderAttributes {
   id: string,
-  customer: string,
-  sponsor: string,
   orderAmount: number,
-  referredCustomer: string,
   promotionMethod: ORDER_PROMOTION_ENUM,
 }
 
@@ -30,20 +27,8 @@ export const OrderModel = sequelize.define<OrderInstance>("Order", {
     type: DataTypes.INTEGER.UNSIGNED,
     autoIncrement: true,
   },
-  customer: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  sponsor: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
   orderAmount: {
     type: DataTypes.FLOAT(10, 2),
-    allowNull: false
-  },
-  referredCustomer: {
-    type: DataTypes.STRING,
     allowNull: false
   },
   promotionMethod: {

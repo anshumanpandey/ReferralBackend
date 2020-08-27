@@ -11,14 +11,14 @@ export enum REWARD_TYPE_ENUM {
 
 interface RewardAttributes {
   id: string,
-  sponsor: string,
   storeCredit?: number,
   freeProduct?: string,
   rewardType: REWARD_TYPE_ENUM
   discountAmount?: string
   discountUnit?: string
   freeDeliver: boolean,
-  couponCode: string,
+  claimed?: boolean,
+  rewardCode: string,
 }
 
 interface RewardCreationAttributes extends Optional<RewardAttributes, "id"> { }
@@ -33,10 +33,6 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
     primaryKey: true,
     type: DataTypes.INTEGER.UNSIGNED,
     autoIncrement: true,
-  },
-  sponsor: {
-    type: DataTypes.STRING,
-    allowNull: false
   },
   rewardType: {
     type: DataTypes.ENUM(...RewardTypeValues),
@@ -58,7 +54,11 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
-  couponCode: {
+  claimed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  rewardCode: {
     type: DataTypes.STRING,
   },
 })

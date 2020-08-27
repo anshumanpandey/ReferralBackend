@@ -4,8 +4,12 @@ import asyncHandler from "express-async-handler"
 import { checkSchema } from "express-validator"
 import { validateParams } from '../middlewares/routeValidation.middleware';
 import { OrderPromotionKeys, OrderModel } from '../models/order.model';
-import { UserModel } from '../models/user.model';
 import { ApiError } from '../utils/ApiError';
+import { RewardModel } from '../models/reward.model';
+import PluginKeyExist from '../utils/PluginKeyExist';
+import { CustomerModel } from '../models/customer.model';
+import MakeId from '../utils/MakeId';
+import sequelize from '../utils/DB';
 
 export const orderRoutes = express();
 
@@ -15,7 +19,7 @@ orderRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: [
 }));
 
 orderRoutes.post('/', validateParams(checkSchema({
-  customer: {
+  customerId: {
     in: ['body'],
     exists: {
       errorMessage: 'Missing field'
@@ -26,16 +30,8 @@ orderRoutes.post('/', validateParams(checkSchema({
     },
     trim: true
   },
-  sponsor: {
+  referredCustomerId: {
     in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    trim: true
   },
   orderAmount: {
     in: ['body'],
@@ -46,29 +42,6 @@ orderRoutes.post('/', validateParams(checkSchema({
       errorMessage: 'Missing field',
       negated: true
     },
-    isFloat: true,
-  },
-  referredCustomer: {
-    in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    isFloat: true,
-  },
-  pluginKey: {
-    in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    isFloat: true,
   },
   promotionMethod: {
     in: ['body'],
@@ -85,9 +58,40 @@ orderRoutes.post('/', validateParams(checkSchema({
     }
   },
 })), asyncHandler(async (req, res) => {
-  const user = await UserModel.findOne({ where: { pluginKey: req.body.pluginKey } })
-  if (!user) throw new ApiError('Invalid plugin key')
+  if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
 
-  const o = await OrderModel.create({ ...req.body, UserId: user.id })
-  res.send({ id: o.id });
+  await sequelize.transaction(async (transaction) => {
+    const clamingCustomer = await CustomerModel.findOne({ where: { id: req.body.customerId }, transaction })
+    if (!clamingCustomer) throw new ApiError("Customer not found")
+
+    if (req.body.rewardCode) {
+      const reward = await RewardModel.findOne({ where: { rewardCode: req.body.rewardCode, claimed: false }, transaction })
+      if (reward && reward?.claimed == false) {
+        await reward?.update({ claimed: true }, { transaction })
+
+        const o = await OrderModel.create({ ...req.body, CustomerId: clamingCustomer.id }, { transaction })
+        res.send({ id: o.id });
+      }
+    } else {
+      const o = await OrderModel.create({ ...req.body, CustomerId: clamingCustomer.id }, { transaction })
+
+      const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }, transaction })
+      if (referredCustomer) {
+        //@ts-expect-error
+        const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id }, transaction })
+        if (!reward) {
+          await RewardModel.create({
+            CustomerId: referredCustomer.id,
+            rewardType: req.body.promotionMethod,
+            claimed: false,
+            rewardCode: MakeId(),
+            ...req.body,
+          }, { transaction })
+        }
+      }
+
+      res.send({ id: o.id });
+    }
+  })
+
 }));

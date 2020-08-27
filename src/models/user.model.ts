@@ -70,10 +70,3 @@ UserModel.hasMany(ReferralProgramModel, {
   }
 });
 ReferralProgramModel.belongsTo(UserModel);
-
-UserModel.hasMany(OrderModel, {
-  foreignKey: {
-    allowNull: false
-  }
-});
-OrderModel.belongsTo(UserModel);
