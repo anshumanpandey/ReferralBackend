@@ -32,6 +32,7 @@ export const OrderModel = sequelize.define<OrderInstance>("Order", {
     allowNull: false
   },
   promotionMethod: {
-    type: DataTypes.ENUM(...OrderPromotionKeys)
+    type: DataTypes.STRING,
+    allowNull: false
   }
 })
