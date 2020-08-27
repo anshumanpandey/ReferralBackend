@@ -3,9 +3,9 @@ var jwt = require('express-jwt');
 import asyncHandler from "express-async-handler"
 import { checkSchema } from "express-validator"
 import { validateParams } from '../middlewares/routeValidation.middleware';
-import { OrderPromotionKeys, OrderModel } from '../models/order.model';
+import { OrderPromotionKeys, OrderModel, ORDER_PROMOTION_ENUM } from '../models/order.model';
 import { ApiError } from '../utils/ApiError';
-import { RewardModel, RewardTypeValues } from '../models/reward.model';
+import { RewardModel, RewardTypeValues, REWARD_TYPE_ENUM } from '../models/reward.model';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
 import MakeId from '../utils/MakeId';
@@ -45,31 +45,9 @@ orderRoutes.post('/', validateParams(checkSchema({
   },
   orderPromotionMethod: {
     in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    isIn: {
-      options: [OrderPromotionKeys],
-      errorMessage: `Valid options are ${OrderPromotionKeys.join(", ")}`
-    }
   },
   rewardPromotionMethod: {
     in: ['body'],
-    exists: {
-      errorMessage: 'Missing field'
-    },
-    isEmpty: {
-      errorMessage: 'Missing field',
-      negated: true
-    },
-    isIn: {
-      options: [RewardTypeValues],
-      errorMessage: `Valid options are ${RewardTypeValues.join(", ")}`
-    }
   },
 })), asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
@@ -83,11 +61,11 @@ orderRoutes.post('/', validateParams(checkSchema({
       if (reward && reward?.claimed == false) {
         await reward?.update({ claimed: true }, { transaction })
 
-        const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod,CustomerId: clamingCustomer.id }, { transaction })
+        const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod || ORDER_PROMOTION_ENUM.LINK,CustomerId: clamingCustomer.id }, { transaction })
         res.send({ id: o.id });
       }
     } else {
-      const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod,CustomerId: clamingCustomer.id }, { transaction })
+      const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod || ORDER_PROMOTION_ENUM.LINK ,CustomerId: clamingCustomer.id }, { transaction })
 
       const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
       if (referredCustomer) {
@@ -96,7 +74,7 @@ orderRoutes.post('/', validateParams(checkSchema({
         if (!reward) {
           await RewardModel.create({
             CustomerId: referredCustomer.id,
-            rewardType: req.body.rewardPromotionMethod,
+            rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
             claimed: false,
             rewardCode: MakeId(),
             ...req.body,
