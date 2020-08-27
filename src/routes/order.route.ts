@@ -83,11 +83,11 @@ orderRoutes.post('/', validateParams(checkSchema({
       if (reward && reward?.claimed == false) {
         await reward?.update({ claimed: true }, { transaction })
 
-        const o = await OrderModel.create({ ...req.body, CustomerId: clamingCustomer.id }, { transaction })
+        const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod,CustomerId: clamingCustomer.id }, { transaction })
         res.send({ id: o.id });
       }
     } else {
-      const o = await OrderModel.create({ ...req.body, CustomerId: clamingCustomer.id }, { transaction })
+      const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod,CustomerId: clamingCustomer.id }, { transaction })
 
       const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }, transaction })
       if (referredCustomer) {
