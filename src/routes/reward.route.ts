@@ -13,9 +13,13 @@ import PluginKeyExist from '../utils/PluginKeyExist';
 
 export const rewardRoutes = express();
 
+rewardRoutes.get('/admin/rewards', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+  res.send(await RewardModel.findAll({ include: [{model: CustomerModel }] }));
+}));
+
 rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
-  res.send(await RewardModel.findAll({ include: [{ model: GiftModel}, { model: ReferralProgramModel, where: { UserId: req.user.id}}] }));
+  res.send(await RewardModel.findAll({ include: [ { model: ReferralProgramModel, where: { UserId: req.user.id}}] }));
 }));
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {

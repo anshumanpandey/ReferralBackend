@@ -14,8 +14,7 @@ import sequelize from '../utils/DB';
 export const orderRoutes = express();
 
 orderRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  //@ts-expect-error
-  res.send(await OrderModel.findAll({ where: { UserId: req.user.id } }));
+  res.send(await OrderModel.findAll({ }));
 }));
 
 orderRoutes.post('/', validateParams(checkSchema({

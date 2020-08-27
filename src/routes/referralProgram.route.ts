@@ -11,6 +11,7 @@ import multer from 'multer';
 import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { Op } from 'sequelize';
 import PluginKeyExist from '../utils/PluginKeyExist';
+import { CustomerModel } from '../models/customer.model';
 
 let storage = multer.diskStorage({
   destination: 'shareImage/',
@@ -37,12 +38,14 @@ referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', alg
 }));
 
 referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  const [ user, programs ] = await Promise.all([
+  const [ user, programs, sponsors ] = await Promise.all([
     UserModel.findAll({ where: { role: {[Op.not]: USER_ROLE_ENUM.SUPER_ADMIN }}}),
     ReferralProgramModel.findAll(),
+    CustomerModel.findAll(),
   ])
   const response = {
     customersAmount: user.length,
+    sponsors: sponsors.length,
     credits: programs.reduce((total, programs) => {
       total = parseInt(programs.creditToAward) + total
       return total
