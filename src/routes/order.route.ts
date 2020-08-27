@@ -30,7 +30,7 @@ orderRoutes.post('/', validateParams(checkSchema({
     },
     trim: true
   },
-  referredCustomerId: {
+  referredCustomerCode: {
     in: ['body'],
   },
   orderAmount: {
@@ -89,7 +89,7 @@ orderRoutes.post('/', validateParams(checkSchema({
     } else {
       const o = await OrderModel.create({ ...req.body, promotionMethod: req.body.orderPromotionMethod,CustomerId: clamingCustomer.id }, { transaction })
 
-      const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }, transaction })
+      const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
       if (referredCustomer) {
         //@ts-expect-error
         const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id }, transaction })
