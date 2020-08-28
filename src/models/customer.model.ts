@@ -2,6 +2,7 @@ import sequelize from "../utils/DB";
 
 import { DataTypes, Model,Optional } from "sequelize";
 import { RewardModel } from "./reward.model";
+import { OrderModel } from "./order.model";
 
 interface CustomerAttributes {
   id: string,
@@ -41,3 +42,19 @@ CustomerModel.hasMany(RewardModel, {
   }
 });
 RewardModel.belongsTo(CustomerModel);
+
+CustomerModel.hasMany(OrderModel, {
+  foreignKey: {
+    allowNull: false,
+    name: "CustomerId"
+  }
+});
+OrderModel.belongsTo(CustomerModel);
+
+CustomerModel.hasMany(OrderModel, {
+  foreignKey: {
+    allowNull: false,
+    name: "SponsorId"
+  }
+});
+OrderModel.belongsTo(CustomerModel);

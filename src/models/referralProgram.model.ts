@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from "sequelize";
 import { SocialShareModel } from "./socialShare.model";
 import { RewardModel } from "./reward.model";
 import { GiftModel } from "./gift.model";
+import { OrderModel } from "./order.model";
 
 export enum REWARD_TYPE_ENUM {
   STORED_CREDIT = "Stored_credit",
@@ -151,3 +152,10 @@ ReferralProgramModel.hasMany(GiftModel, {
   }
 });
 GiftModel.belongsTo(ReferralProgramModel);
+
+ReferralProgramModel.hasMany(OrderModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+OrderModel.belongsTo(ReferralProgramModel);

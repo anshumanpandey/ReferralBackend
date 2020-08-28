@@ -10,6 +10,7 @@ import sequelize from '../utils/DB';
 import { ReferralProgramModel } from '../models/referralProgram.model';
 import { CustomerModel } from '../models/customer.model';
 import PluginKeyExist from '../utils/PluginKeyExist';
+import MakeId from '../utils/MakeId';
 
 export const rewardRoutes = express();
 
@@ -20,6 +21,26 @@ rewardRoutes.get('/admin/rewards', jwt({ secret: process.env.JWT_SECRET || 'aa',
 rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
   res.send(await RewardModel.findAll({ include: [ { model: ReferralProgramModel, where: { UserId: req.user.id}}] }));
+}));
+
+rewardRoutes.post('/single', asyncHandler(async (req, res) => {
+  if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
+
+  const customer = await CustomerModel.findOne({ where: { id: req.body.customerId }})
+  const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }})
+
+  if (!customer) throw new ApiError("Customer not found")
+  if (!referredCustomer) throw new ApiError("Referred Customer not found")
+
+  const r = await RewardModel.create({
+    CustomerId: req.body.customerId,
+    rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
+    claimed: false,
+    rewardCode: MakeId(),
+    ...req.body,
+  })
+
+  res.send({ id: r.id });
 }));
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
