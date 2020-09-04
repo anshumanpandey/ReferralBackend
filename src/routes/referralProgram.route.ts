@@ -34,24 +34,60 @@ referralProgramRoutes.get('/program/', asyncHandler(async (req, res) => {
 
 referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
-  res.send(await ReferralProgramModel.findAll({ where: { UserId: req.user.id }, include: [{ model: GiftModel }] }));
+  if (req.user.role == USER_ROLE_ENUM.SUPER_ADMIN) {
+    res.send(await ReferralProgramModel.findAll({ include: [{ model: GiftModel }] }));
+  } else {
+    //@ts-expect-error
+    res.send(await ReferralProgramModel.findAll({ where: { UserId: req.user.id }, include: [{ model: GiftModel }] }));
+  }
 }));
 
 referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  const [ user, programs, sponsors ] = await Promise.all([
-    UserModel.findAll({ where: { role: {[Op.not]: USER_ROLE_ENUM.SUPER_ADMIN }}}),
-    ReferralProgramModel.findAll(),
-    CustomerModel.findAll(),
-  ])
-  const response = {
-    customersAmount: user.length,
-    sponsors: sponsors.length,
-    credits: programs.reduce((total, programs) => {
-      total = parseInt(programs.creditToAward) + total
-      return total
-    }, 0)
+  if (req.query.for || req.query.from || req.query.to) {
+    const customerWhereFilter = {}
+    let timeFilters = {}
+    if (req.query.for) {
+      //@ts-expect-error
+      customerWhereFilter.ReferralProgramId = req.query.for
+    }
+    if (req.query.from && req.query.to) {
+      timeFilters = {
+        createdAt: {
+          [Op.between]: [new Date(parseInt(req.query.from.toString()) * 1000), new Date(parseInt(req.query.to.toString()) * 1000)],
+       },
+      }
+    }
+    const [customers, programs, sponsors] = await Promise.all([
+      CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
+      ReferralProgramModel.findAll({ where: { ...timeFilters }}),
+      CustomerModel.findAll(),
+    ])
+    const response = {
+      customersAmount: customers.length,
+      sponsors: sponsors.length,
+      credits: programs.reduce((total, programs) => {
+        total = parseInt(programs.creditToAward) + total
+        return total
+      }, 0)
+    }
+    res.send(response);
+  } else {
+    const [customers, programs, sponsors] = await Promise.all([
+      CustomerModel.findAll(),
+      ReferralProgramModel.findAll(),
+      CustomerModel.findAll(),
+    ])
+    const response = {
+      customersAmount: customers.length,
+      sponsors: sponsors.length,
+      credits: programs.reduce((total, programs) => {
+        total = parseInt(programs.creditToAward) + total
+        return total
+      }, 0)
+    }
+    res.send(response);
   }
-  res.send(response);
+
 }));
 
 referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), upload.single("shareImage"), validateParams(checkSchema({
@@ -83,7 +119,11 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
     isActive: req.body.isActive,
     endDate: req.body.endDate,
     emailTemplate: req.body.emailTemplate || null,
+    emailFrom: req.body.emailFrom || null,
+    emailSubject: req.body.emailSubject || null,
     creditToAward: req.body.creditToAward,
+
+    destinationLink: req.body.destinationLink,
 
     customerMaxStoreCredit: req.body.maxCreditPerCustomer,
     customerFreeProduct: req.body.customerFreeProduct,

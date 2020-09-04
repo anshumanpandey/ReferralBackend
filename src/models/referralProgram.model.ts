@@ -4,6 +4,7 @@ import { SocialShareModel } from "./socialShare.model";
 import { RewardModel } from "./reward.model";
 import { GiftModel } from "./gift.model";
 import { OrderModel } from "./order.model";
+import { CustomerModel } from "./customer.model";
 
 export enum REWARD_TYPE_ENUM {
   STORED_CREDIT = "Stored_credit",
@@ -27,6 +28,10 @@ interface ReferralProgramAttributes {
   isActive: boolean,
   endDate?: Date,
   emailTemplate?: string,
+  emailFrom?: string,
+  emailSubject?: string,
+
+  destinationLink?: string
 
   creditToAward: string,
   customerMaxStoreCredit?: number,
@@ -72,6 +77,18 @@ export const ReferralProgramModel = sequelize.define<ReferralProgram>("ReferralP
   },
   emailTemplate: {
     type: DataTypes.STRING(2000),
+    allowNull: true
+  },
+  emailFrom: {
+    type: DataTypes.STRING(),
+    allowNull: true
+  },
+  emailSubject: {
+    type: DataTypes.STRING(),
+    allowNull: true
+  },
+  destinationLink: {
+    type: DataTypes.STRING(),
     allowNull: true
   },
 
@@ -159,3 +176,10 @@ ReferralProgramModel.hasMany(OrderModel, {
   }
 });
 OrderModel.belongsTo(ReferralProgramModel);
+
+ReferralProgramModel.hasMany(CustomerModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+CustomerModel.belongsTo(ReferralProgramModel);
