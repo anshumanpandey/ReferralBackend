@@ -60,7 +60,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
     }
   }
   const [customers, rewards, sponsors, orders] = await Promise.all([
-    CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: OrderModel, include: [{ model: RewardModel }] }] }),
+    CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: CustomerModel },{ model: OrderModel, include: [{ model: RewardModel }] }] }),
     RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
     CustomerModel.findAll(),
     OrderModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
@@ -114,7 +114,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
       return total
     }, 0) || 0,
     //@ts-expect-error
-    leaderboard: customers.sort((a,b) => b.Orders.length - a.Orders.length).slice(0, 3),
+    leaderboard: customers.sort((a,b) => b.Customers.length - a.Customers.length).slice(0, 3),
   }
 
   res.send(response);

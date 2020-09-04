@@ -59,10 +59,10 @@ CustomerModel.hasMany(OrderModel, {
 });
 OrderModel.belongsTo(CustomerModel);
 
-CustomerModel.hasOne(CustomerModel, {
+CustomerModel.hasMany(CustomerModel, {
   foreignKey: {
     allowNull: true,
-    name: "ReferredBy"
+    name: "ReferredBy",
   }
 });
 CustomerModel.belongsTo(CustomerModel);
