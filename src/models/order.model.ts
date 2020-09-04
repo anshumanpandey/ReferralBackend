@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 
 import { DataTypes, Model, Optional } from "sequelize";
+import { RewardModel } from "./reward.model";
 
 export enum ORDER_PROMOTION_ENUM {
   COUPON = "Coupon",
@@ -35,3 +36,10 @@ export const OrderModel = sequelize.define<OrderInstance>("Order", {
     type: DataTypes.ENUM(...OrderPromotionKeys)
   }
 })
+
+OrderModel.hasOne(RewardModel, {
+  foreignKey: {
+    allowNull: true
+  }
+});
+RewardModel.belongsTo(OrderModel);

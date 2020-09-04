@@ -9,10 +9,11 @@ import { GiftModel } from '../models/gift.model';
 import sequelize from '../utils/DB';
 import multer from 'multer';
 import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
-import { Op } from 'sequelize';
+import { Op, or } from 'sequelize';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
 import { RewardModel } from '../models/reward.model';
+import { OrderModel } from '../models/order.model';
 
 let storage = multer.diskStorage({
   destination: 'shareImage/',
@@ -44,50 +45,79 @@ referralProgramRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', alg
 }));
 
 referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  if (req.query.for || req.query.from || req.query.to) {
-    const customerWhereFilter = {}
-    let timeFilters = {}
-    if (req.query.for) {
-      //@ts-expect-error
-      customerWhereFilter.ReferralProgramId = req.query.for
-    }
-    if (req.query.from && req.query.to) {
-      timeFilters = {
-        createdAt: {
-          [Op.between]: [new Date(parseInt(req.query.from.toString()) * 1000), new Date(parseInt(req.query.to.toString()) * 1000)],
-       },
-      }
-    }
-    const [customers, rewards, sponsors] = await Promise.all([
-      CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
-      RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }}),
-      CustomerModel.findAll(),
-    ])
-    const response = {
-      customersAmount: customers.length,
-      sponsors: sponsors.length,
-      credits: rewards.reduce((total, reward) => {
-        total = (reward.storeCredit || 0) + total
-        return total
-      }, 0)
-    }
-    res.send(response);
-  } else {
-    const [customers, rewards, sponsors] = await Promise.all([
-      CustomerModel.findAll(),
-      RewardModel.findAll(),
-      CustomerModel.findAll(),
-    ])
-    const response = {
-      customersAmount: customers.length,
-      sponsors: sponsors.length,
-      credits: rewards.reduce((total, reward) => {
-        total = (reward.storeCredit || 0) + total
-        return total
-      }, 0)
-    }
-    res.send(response);
+  const customerWhereFilter = {}
+  let timeFilters = {}
+
+  if (req.query.for) {
+    //@ts-expect-error
+    customerWhereFilter.ReferralProgramId = req.query.for
   }
+  if (req.query.from && req.query.to) {
+    timeFilters = {
+      createdAt: {
+        [Op.between]: [new Date(parseInt(req.query.from.toString()) * 1000), new Date(parseInt(req.query.to.toString()) * 1000)],
+      },
+    }
+  }
+  const [customers, rewards, sponsors, orders] = await Promise.all([
+    CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: OrderModel, include: [{ model: RewardModel }] }] }),
+    RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
+    CustomerModel.findAll(),
+    OrderModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
+  ])
+  //@ts-expect-error
+  const newCustomers = customers.filter(c => !c.ReferredBy)
+  //@ts-expect-error
+  const oldCustomers = customers.filter(c => c.ReferredBy)
+
+  const response = {
+    customersAmount: customers.length,
+    sponsors: oldCustomers.length,
+    averageCartNewCustomer: newCustomers.reduce((total, customer) => {
+      //@ts-expect-error
+      total = total + customer.Orders.reduce((total, order) => {
+        total = total + order.orderAmount
+        return total
+      }, 0)
+      return total
+    }, 0) / newCustomers.length,
+    totalRevenueNewCustomerReferred: newCustomers.reduce((total, customer) => {
+      //@ts-expect-error
+      total = total + customer.Orders.reduce((total, order) => {
+        total = total + order.orderAmount
+        return total
+      }, 0)
+      return total
+    }, 0),
+    totalRevenueFromExistingCustomerUsingStoredCredit: oldCustomers.reduce((total, customer) => {
+      //@ts-expect-error
+      total = total + customer.Orders.filter(o => o.Reward && o.Reward.rewardType == REWARD_TYPE_ENUM.STORED_CREDIT).reduce((total, order) => {
+        total = total + order.orderAmount
+        return total
+      }, 0)
+      return total
+    }, 0),
+    credits: rewards.reduce((total, reward) => {
+      total = (reward.storeCredit || 0) + total
+      return total
+    }, 0),
+    totalRevenue: orders.reduce((total, order) => {
+      total = order.orderAmount + total
+      return total
+    }, 0),
+    totalUsedCredits: rewards.filter(r => r?.claimed == true).reduce((total, reward) => {
+      total = (reward.storeCredit || 0) + total
+      return total
+    }, 0) || 0,
+    totalUnusedCredits: rewards.filter(r => r?.claimed == false).reduce((total, reward) => {
+      total = (reward.storeCredit || 0) + total
+      return total
+    }, 0) || 0,
+    //@ts-expect-error
+    leaderboard: customers.sort((a,b) => b.Orders.length - a.Orders.length).slice(0, 3),
+  }
+
+  res.send(response);
 
 }));
 
