@@ -134,7 +134,7 @@ rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms:
   await sequelize.transaction(async (transaction) => {
     const program = await ReferralProgramModel.findByPk(req.body.referralProgramId)
     if (!program) throw new ApiError("ReferralProgram not found")
-    const o = await RewardModel.create(body, { transaction })
+    const o = await RewardModel.create({ ...body, rewardCode: MakeId() }, { transaction })
     if (gifts.length != 0) {
       await GiftModel.bulkCreate(gifts.map(g => ({ ...g, RewardId: o.id })), { transaction })
     }
