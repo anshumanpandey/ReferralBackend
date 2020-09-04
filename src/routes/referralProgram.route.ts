@@ -116,6 +116,7 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
   const program: any = {
     id: req.body.id,
     name: req.body.name,
+    description: req.body.description,
     isActive: req.body.isActive,
     endDate: req.body.endDate,
     emailTemplate: req.body.emailTemplate || null,
@@ -143,6 +144,11 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
 
     //@ts-expect-error
     UserId: req.user.id
+  }
+
+  //@ts-expect-error
+  if (req.user.role == "Super_admin" && req.body.linkTo) {
+    program.UserId = req.body.linkTo
   }
 
   if (req.body.socialMediaImage == "true") {

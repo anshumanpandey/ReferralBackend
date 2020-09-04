@@ -25,6 +25,7 @@ export const RewardTypeValues = Object.values(REWARD_TYPE_ENUM).filter(k => !Num
 interface ReferralProgramAttributes {
   id: string,
   name: string,
+  description: string
   isActive: boolean,
   endDate?: Date,
   emailTemplate?: string,
@@ -66,6 +67,11 @@ export const ReferralProgramModel = sequelize.define<ReferralProgram>("ReferralP
     type: DataTypes.STRING,
     allowNull: false
   },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  
   endDate: {
     type: DataTypes.DATE,
     allowNull: true
