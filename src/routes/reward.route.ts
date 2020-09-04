@@ -11,6 +11,7 @@ import { ReferralProgramModel } from '../models/referralProgram.model';
 import { CustomerModel } from '../models/customer.model';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import MakeId from '../utils/MakeId';
+import { UserModel } from '../models/user.model';
 
 export const rewardRoutes = express();
 
@@ -32,11 +33,16 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   if (!customer) throw new ApiError("Customer not found")
   if (!referredCustomer) throw new ApiError("Referred Customer not found")
 
+  //@ts-expect-error
+  const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{model: UserModel, attributes: []}]})
+  if (!program) throw new ApiError("No active program found for this plugin key")
+
   const r = await RewardModel.create({
     CustomerId: req.body.customerId,
     rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
     claimed: false,
     rewardCode: MakeId(),
+    ReferralProgramId: program.id,
     ...req.body,
   })
 
@@ -132,7 +138,7 @@ rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms:
   }
 
   await sequelize.transaction(async (transaction) => {
-    const program = await ReferralProgramModel.findByPk(req.body.referralProgramId)
+    const program = await ReferralProgramModel.findByPk(req.body.referralProgramId, { transaction })
     if (!program) throw new ApiError("ReferralProgram not found")
     const o = await RewardModel.create({ ...body, rewardCode: MakeId() }, { transaction })
     if (gifts.length != 0) {

@@ -189,3 +189,10 @@ ReferralProgramModel.hasMany(CustomerModel, {
   }
 });
 CustomerModel.belongsTo(ReferralProgramModel);
+
+ReferralProgramModel.hasMany(RewardModel, {
+  foreignKey: {
+    allowNull: false
+  }
+});
+RewardModel.belongsTo(ReferralProgramModel);

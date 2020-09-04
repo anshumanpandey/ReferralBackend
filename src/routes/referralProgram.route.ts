@@ -12,6 +12,7 @@ import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { Op } from 'sequelize';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
+import { RewardModel } from '../models/reward.model';
 
 let storage = multer.diskStorage({
   destination: 'shareImage/',
@@ -57,31 +58,31 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
        },
       }
     }
-    const [customers, programs, sponsors] = await Promise.all([
+    const [customers, rewards, sponsors] = await Promise.all([
       CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
-      ReferralProgramModel.findAll({ where: { ...timeFilters }}),
+      RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }}),
       CustomerModel.findAll(),
     ])
     const response = {
       customersAmount: customers.length,
       sponsors: sponsors.length,
-      credits: programs.reduce((total, programs) => {
-        total = parseInt(programs.creditToAward) + total
+      credits: rewards.reduce((total, reward) => {
+        total = (reward.storeCredit || 0) + total
         return total
       }, 0)
     }
     res.send(response);
   } else {
-    const [customers, programs, sponsors] = await Promise.all([
+    const [customers, rewards, sponsors] = await Promise.all([
       CustomerModel.findAll(),
-      ReferralProgramModel.findAll(),
+      RewardModel.findAll(),
       CustomerModel.findAll(),
     ])
     const response = {
       customersAmount: customers.length,
       sponsors: sponsors.length,
-      credits: programs.reduce((total, programs) => {
-        total = parseInt(programs.creditToAward) + total
+      credits: rewards.reduce((total, reward) => {
+        total = (reward.storeCredit || 0) + total
         return total
       }, 0)
     }
