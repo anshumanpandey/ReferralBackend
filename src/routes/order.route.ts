@@ -86,6 +86,7 @@ orderRoutes.post('/', validateParams(checkSchema({
           rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
           claimed: false,
           rewardCode: MakeId(),
+          storeCredit: program.creditToAward || 0,
           ReferralProgramId: program.id,
           ...req.body,
         }, { transaction })
