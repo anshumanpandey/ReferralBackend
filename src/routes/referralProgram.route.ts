@@ -143,16 +143,15 @@ referralProgramRoutes.post('/changeActiveStatus', validateParams(checkSchema({
     },
   },
 })), asyncHandler(async (req, res) => {
-  if (req.body.isActive === true) {
-    const [hasActive, programFound] = await Promise.all([
-      await ReferralProgramModel.findOne({ where: { isActive: true } }),
-      await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
-    ])
-    if (hasActive) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
-    if (!programFound) throw new ApiError("Program not found")
+  const [hasActive, programFound] = await Promise.all([
+    await ReferralProgramModel.findOne({ where: { isActive: true } }),
+    await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
+  ])
+  if (hasActive && req.body.isActive == true) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
+  if (!programFound) throw new ApiError("Program not found")
 
-    programFound.update({ isActive: req.body.isActive })
-  }
+  programFound.update({ isActive: req.body.isActive })
+  res.send({});
 }));
 
 
@@ -174,10 +173,10 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
     if (hasActive) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
   }
   const promotions = []
-  if (req.body.personalLinkPromotion) promotions.push(PROMOTION_ENUM.PERSONAL_LINK)
-  if (req.body.couponPromotion) promotions.push(PROMOTION_ENUM.COUPON_CODE)
-  if (req.body.socialMediaImage) promotions.push(PROMOTION_ENUM.SOCIAL_MEDIA_IMAGE)
-  if (req.body.emailPromotion) promotions.push(PROMOTION_ENUM.EMAIL)
+  if (req.body.personalLinkPromotion == 'true') promotions.push(PROMOTION_ENUM.PERSONAL_LINK)
+  if (req.body.couponPromotion == 'true') promotions.push(PROMOTION_ENUM.COUPON_CODE)
+  if (req.body.socialMediaImage == 'true') promotions.push(PROMOTION_ENUM.SOCIAL_MEDIA_IMAGE)
+  if (req.body.emailPromotion == 'true') promotions.push(PROMOTION_ENUM.EMAIL)
 
   const program: any = {
     id: req.body.id,

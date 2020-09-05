@@ -32,10 +32,11 @@ UserModel.hasMany(ProductModel, {
 });
 ProductModel.belongsTo(UserModel);
 
-RewardModel.hasOne(ProductModel, {
-  as: "FreeProductId",
-  foreignKey: {
-    allowNull: true,
-  }
+RewardModel.belongsToMany(ProductModel, {
+  as: "FreeProduct",
+  through: "PartnerDefaultItems"
 });
-ProductModel.belongsTo(RewardModel);
+ProductModel.belongsToMany(RewardModel, {
+  as: "ForReward",
+  through: "PartnerDefaultItems"
+});

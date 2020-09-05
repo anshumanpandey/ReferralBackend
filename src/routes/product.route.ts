@@ -5,7 +5,7 @@ import { checkSchema } from "express-validator"
 import { validateParams } from '../middlewares/routeValidation.middleware';
 import { OrderPromotionKeys, OrderModel } from '../models/order.model';
 import { ProductModel } from '../models/product.model';
-import { UserModel } from '../models/user.model';
+import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { ApiError } from '../utils/ApiError';
 
 export const productRoutes = express();
@@ -13,6 +13,16 @@ export const productRoutes = express();
 productRoutes.get('/:pluginKey', asyncHandler(async (req, res) => {
   //@ts-expect-error
   res.send(await ProductModel.findAll({ where: { "$User.pluginKey$": req.params.pluginKey }, include: [{model: UserModel, attributes: []}]}));
+}));
+
+productRoutes.get('/back', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
+  //@ts-expect-error
+  if (req.user.role == USER_ROLE_ENUM.SUPER_ADMIN) {
+    res.send(await ProductModel.findAll());
+  } else {
+    //@ts-expect-error
+    res.send(await ProductModel.findAll({ where: { UserId: req.user.id}}));
+  }
 }));
 
 productRoutes.post('/', validateParams(checkSchema({

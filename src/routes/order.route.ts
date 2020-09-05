@@ -78,12 +78,11 @@ orderRoutes.post('/', validateParams(checkSchema({
       const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
       if (!referredCustomer) throw new ApiError("Referred customer not found")
 
-      const friendRewardData = {
+      const friendRewardData: any = {
         CustomerId: clamingCustomer.id,
         rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
         claimed: false,
         ReferralProgramId: program.id,
-        ...req.body,
         rewardCode: MakeId(),
       }
       if (program.friendRewardType == REWARD_TYPE_ENUM.DISCOUNT) {
