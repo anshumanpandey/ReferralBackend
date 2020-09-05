@@ -53,7 +53,7 @@ OrderModel.belongsTo(CustomerModel);
 
 CustomerModel.hasMany(OrderModel, {
   foreignKey: {
-    allowNull: false,
+    allowNull: true,
     name: "SponsorId"
   }
 });

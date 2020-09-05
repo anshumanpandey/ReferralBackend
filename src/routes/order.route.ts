@@ -16,7 +16,7 @@ import { ReferralProgramModel } from '../models/referralProgram.model';
 export const orderRoutes = express();
 
 orderRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  res.send(await OrderModel.findAll({ }));
+  res.send(await OrderModel.findAll({}));
 }));
 
 orderRoutes.post('/', validateParams(checkSchema({
@@ -54,7 +54,7 @@ orderRoutes.post('/', validateParams(checkSchema({
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
 
   await sequelize.transaction(async (transaction) => {
-    const user = await UserModel.findOne({ where: { pluginKey: req.query.pluginKey }, include: [{model: ReferralProgramModel, where: { isActive: true } }]})
+    const user = await UserModel.findOne({ where: { pluginKey: req.query.pluginKey }, include: [{ model: ReferralProgramModel, where: { isActive: true } }] })
 
     //@ts-expect-error
     const program = user?.ReferralPrograms[0]
@@ -64,20 +64,21 @@ orderRoutes.post('/', validateParams(checkSchema({
     const clamingCustomer = await CustomerModel.findOne({ where: { id: req.body.customerId }, transaction })
     if (!clamingCustomer) throw new ApiError("Customer not found")
 
+    let sponsorId = undefined
     if (req.body.rewardCode) {
       const reward = await RewardModel.findOne({ where: { rewardCode: req.body.rewardCode }, transaction })
       if (reward && reward?.claimed == false) {
         await reward?.update({ claimed: true }, { transaction })
+        //@ts-expect-error
+        sponsorId = reward.CustomerId
       }
+    }
 
-      //@ts-expect-error
-      const o = await OrderModel.create({ ...req.body, ReferralProgramId: program.id, CustomerId: clamingCustomer.id, SponsorId: reward.CustomerId, promotionMethod: req.body.orderPromotionMethod || ORDER_PROMOTION_ENUM.LINK,CustomerId: clamingCustomer.id }, { transaction })
-      res.send({ id: o.id });
-    } else {
+    if (req.body.referredCustomerCode) {
       const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
-      if (!referredCustomer) throw new ApiError("Reffered customer not found")
+      if (!referredCustomer) throw new ApiError("Referred customer not found")
 
-      const o = await OrderModel.create({ ...req.body, ReferralProgramId: program.id, CustomerId: clamingCustomer.id, SponsorId: referredCustomer.id, promotionMethod: req.body.orderPromotionMethod || ORDER_PROMOTION_ENUM.LINK }, { transaction })
+      sponsorId = referredCustomer.id
       //@ts-expect-error
       const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id }, transaction })
       if (!reward) {
@@ -91,9 +92,11 @@ orderRoutes.post('/', validateParams(checkSchema({
           ...req.body,
         }, { transaction })
       }
-
-      res.send({ id: o.id });
     }
+
+    const o = await OrderModel.create({ ...req.body, ReferralProgramId: program.id, CustomerId: clamingCustomer.id, SponsorId: sponsorId, promotionMethod: req.body.orderPromotionMethod || ORDER_PROMOTION_ENUM.LINK }, { transaction })
+
+    res.send({ id: o.id });
   })
 
 }));
