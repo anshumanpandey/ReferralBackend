@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 import { DataTypes, Model, Optional } from "sequelize";
 import { GiftModel } from "./gift.model";
+import { ProductModel } from "./product.model";
 
 export enum REWARD_TYPE_ENUM {
   STORED_CREDIT = "Stored_credit",
@@ -41,9 +42,6 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
   storeCredit: {
     type: DataTypes.INTEGER,
   },
-  freeProduct: {
-    type: DataTypes.STRING,
-  },
   discountAmount: {
     type: DataTypes.FLOAT,
   },
@@ -62,3 +60,11 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
     type: DataTypes.STRING,
   },
 })
+
+RewardModel.hasOne(ProductModel, {
+  as: "FreeProductId",
+  foreignKey: {
+    allowNull: false,
+  }
+});
+ProductModel.belongsTo(RewardModel);

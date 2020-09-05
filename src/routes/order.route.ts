@@ -78,6 +78,25 @@ orderRoutes.post('/', validateParams(checkSchema({
       const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
       if (!referredCustomer) throw new ApiError("Referred customer not found")
 
+      const friendRewardData = {
+        CustomerId: clamingCustomer.id,
+        rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
+        claimed: false,
+        ReferralProgramId: program.id,
+        ...req.body,
+        rewardCode: MakeId(),
+      }
+      if (program.friendRewardType == REWARD_TYPE_ENUM.DISCOUNT) {
+        friendRewardData.discountAmount = program.friendDiscountAmount
+        friendRewardData.discountUnit = program.friendDiscountUnit
+      }
+  
+      if (program.friendRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT) {
+        friendRewardData.FreeProductId = program.friendFreeProduct
+      }
+  
+      await RewardModel.create(friendRewardData, { transaction })
+
       sponsorId = referredCustomer.id
       //@ts-expect-error
       const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id }, transaction })

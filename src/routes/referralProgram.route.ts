@@ -121,6 +121,41 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
 
 }));
 
+referralProgramRoutes.post('/changeActiveStatus', validateParams(checkSchema({
+  programId: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+  },
+  isActive: {
+    in: ['body'],
+    exists: {
+      errorMessage: 'Missing field'
+    },
+    isEmpty: {
+      errorMessage: 'Missing field',
+      negated: true
+    },
+  },
+})), asyncHandler(async (req, res) => {
+  if (req.body.isActive === true) {
+    const [hasActive, programFound] = await Promise.all([
+      await ReferralProgramModel.findOne({ where: { isActive: true } }),
+      await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
+    ])
+    if (hasActive) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
+    if (!programFound) throw new ApiError("Program not found")
+
+    programFound.update({ isActive: req.body.isActive })
+  }
+}));
+
+
 referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), upload.single("shareImage"), validateParams(checkSchema({
   name: {
     in: ['body'],
