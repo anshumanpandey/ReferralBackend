@@ -10,11 +10,6 @@ import { ApiError } from '../utils/ApiError';
 
 export const productRoutes = express();
 
-productRoutes.get('/:pluginKey', asyncHandler(async (req, res) => {
-  //@ts-expect-error
-  res.send(await ProductModel.findAll({ where: { "$User.pluginKey$": req.params.pluginKey }, include: [{model: UserModel, attributes: []}]}));
-}));
-
 productRoutes.get('/back', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
   if (req.user.role == USER_ROLE_ENUM.SUPER_ADMIN) {
@@ -23,6 +18,11 @@ productRoutes.get('/back', jwt({ secret: process.env.JWT_SECRET || 'aa', algorit
     //@ts-expect-error
     res.send(await ProductModel.findAll({ where: { UserId: req.user.id}}));
   }
+}));
+
+productRoutes.get('/:pluginKey', asyncHandler(async (req, res) => {
+  //@ts-expect-error
+  res.send(await ProductModel.findAll({ where: { "$User.pluginKey$": req.params.pluginKey }, include: [{model: UserModel, attributes: []}]}));
 }));
 
 productRoutes.post('/', validateParams(checkSchema({

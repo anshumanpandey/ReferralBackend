@@ -14,6 +14,7 @@ import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
 import { RewardModel } from '../models/reward.model';
 import { OrderModel } from '../models/order.model';
+import { ProductModel } from '../models/product.model';
 
 let storage = multer.diskStorage({
   destination: 'shareImage/',
@@ -252,7 +253,22 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
     if (program.id) {
       const fieldsToUpdate = Object.keys(program).filter(k => program[k] !== undefined)
       //@ts-expect-error
-      await ReferralProgramModel.update(program, { fields: fieldsToUpdate, where: { id: program.id }, transaction })
+      const programToUpdate = await ReferralProgramModel.findOne({ where: { id: program.id }}, { transaction })
+      const res = await programToUpdate.update(program, { fields: fieldsToUpdate, transaction })
+      if (program.customerRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT && req.body.customerFreeProduct) {
+        const productForCustomer = await ProductModel.findByPk(req.body.customerFreeProduct, { transaction })
+        if (productForCustomer) {
+          //@ts-expect-error
+          await res.setFreeProductForCustomer(productForCustomer, { transaction }) 
+        }
+      }
+      if (program.friendRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT && req.body.friendFreeProduct) {
+        const productForCustomer = await ProductModel.findByPk(req.body.friendFreeProduct, { transaction })
+        if (productForCustomer) {
+          //@ts-expect-error
+          await res.setFreeProductForFriend(productForCustomer, { transaction }) 
+        }
+      }
 
       programId = program.id
     } else {

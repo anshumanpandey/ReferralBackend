@@ -12,6 +12,7 @@ import MakeId from '../utils/MakeId';
 import sequelize from '../utils/DB';
 import { UserModel } from '../models/user.model';
 import { ReferralProgramModel } from '../models/referralProgram.model';
+import { ProductModel } from '../models/product.model';
 
 export const orderRoutes = express();
 
@@ -90,11 +91,11 @@ orderRoutes.post('/', validateParams(checkSchema({
         friendRewardData.discountUnit = program.friendDiscountUnit
       }
   
+      /*const friendReward = await RewardModel.create(friendRewardData, { transaction })
       if (program.friendRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT) {
-        friendRewardData.FreeProductId = program.friendFreeProduct
-      }
-  
-      await RewardModel.create(friendRewardData, { transaction })
+        const product = await ProductModel.findOne({ where: { id: }})
+        friendReward.addFreeProduct(re)
+      }*/
 
       sponsorId = referredCustomer.id
       //@ts-expect-error
