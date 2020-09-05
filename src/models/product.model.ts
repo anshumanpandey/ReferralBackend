@@ -1,6 +1,7 @@
 import sequelize from "../utils/DB";
 import { DataTypes, Model, Optional } from "sequelize";
 import { UserModel } from "./user.model";
+import { RewardModel } from "./reward.model";
 
 interface ProductAttributes {
   id: string,
@@ -30,3 +31,11 @@ UserModel.hasMany(ProductModel, {
   }
 });
 ProductModel.belongsTo(UserModel);
+
+RewardModel.hasOne(ProductModel, {
+  as: "FreeProductId",
+  foreignKey: {
+    allowNull: true,
+  }
+});
+ProductModel.belongsTo(RewardModel);

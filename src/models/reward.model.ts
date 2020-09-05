@@ -60,11 +60,3 @@ export const RewardModel = sequelize.define<RewardInstance>("Reward", {
     type: DataTypes.STRING,
   },
 })
-
-RewardModel.hasOne(ProductModel, {
-  as: "FreeProductId",
-  foreignKey: {
-    allowNull: false,
-  }
-});
-ProductModel.belongsTo(RewardModel);
