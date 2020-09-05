@@ -53,6 +53,10 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
     //@ts-expect-error
     customerWhereFilter.ReferralProgramId = req.query.for
   }
+  if (req.query.forPartner) {
+    //@ts-expect-error
+    customerWhereFilter["$ReferralProgram.User.id$"] = req.query.forPartner
+  }
   if (req.query.from && req.query.to) {
     timeFilters = {
       createdAt: {
@@ -60,11 +64,10 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
       },
     }
   }
-  const [customers, rewards, sponsors, orders] = await Promise.all([
-    CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: CustomerModel },{ model: OrderModel, include: [{ model: RewardModel }] }] }),
-    RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
-    CustomerModel.findAll(),
-    OrderModel.findAll({ where: { ...customerWhereFilter, ...timeFilters } }),
+  const [customers, rewards, orders] = await Promise.all([
+    CustomerModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: ReferralProgramModel, include: [{ model: UserModel, attributes: []}] ,attributes: []},{ model: CustomerModel },{ model: OrderModel, include: [{ model: RewardModel }] }] }),
+    RewardModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: ReferralProgramModel, include: [{ model: UserModel, attributes: []}] ,attributes: []}] }),
+    OrderModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: ReferralProgramModel, include: [{ model: UserModel, attributes: []}] ,attributes: []}] }),
   ])
   //@ts-expect-error
   const newCustomers = customers.filter(c => !c.ReferredBy)
@@ -73,7 +76,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
 
   const response = {
     customersAmount: customers.length,
-    sponsors: oldCustomers.length,
+    sponsors: newCustomers.length,
     averageCartNewCustomer: newCustomers.reduce((total, customer) => {
       //@ts-expect-error
       total = total + customer.Orders.reduce((total, order) => {
@@ -81,7 +84,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
         return total
       }, 0)
       return total
-    }, 0) / newCustomers.length,
+    }, 0) / (newCustomers.length || 1),
     totalRevenueNewCustomerReferred: newCustomers.reduce((total, customer) => {
       //@ts-expect-error
       total = total + customer.Orders.reduce((total, order) => {
