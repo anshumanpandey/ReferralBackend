@@ -99,7 +99,7 @@ orderRoutes.post('/', validateParams(checkSchema({
 
       sponsorId = referredCustomer.id
       //@ts-expect-error
-      const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id }, transaction })
+      const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id, ReferralProgramId: program.id, }, transaction })
       if (!reward) {
         await RewardModel.create({
           CustomerId: referredCustomer.id,

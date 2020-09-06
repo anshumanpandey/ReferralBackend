@@ -16,26 +16,40 @@ import { UserModel } from '../models/user.model';
 export const rewardRoutes = express();
 
 rewardRoutes.get('/admin/rewards', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  res.send(await RewardModel.findAll({ include: [{model: CustomerModel }] }));
+  res.send(await RewardModel.findAll({ include: [{ model: CustomerModel }] }));
 }));
 
 rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
-  res.send(await RewardModel.findAll({ include: [ { model: ReferralProgramModel, where: { UserId: req.user.id}}] }));
+  res.send(await RewardModel.findAll({ include: [{ model: ReferralProgramModel, where: { UserId: req.user.id } }] }));
 }));
 
 rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
 
-  const customer = await CustomerModel.findOne({ where: { id: req.body.customerId }})
-  const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }})
+  const customer = await CustomerModel.findOne({ where: { id: req.body.customerId } })
+  const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId } })
 
   if (!customer) throw new ApiError("Customer not found")
   if (!referredCustomer) throw new ApiError("Referred Customer not found")
 
   //@ts-expect-error
-  const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{model: UserModel, attributes: []}]})
+  const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{ model: UserModel, attributes: [] }] })
   if (!program) throw new ApiError("No active program found for this plugin key")
+
+  //@ts-expect-error
+  const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id, ReferralProgramId: program.id } })
+  if (!reward) {
+    await RewardModel.create({
+      CustomerId: referredCustomer.id,
+      rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
+      claimed: false,
+      storeCredit: program.creditToAward || 0,
+      ReferralProgramId: program.id,
+      ...req.body,
+      rewardCode: MakeId(),
+    })
+  }
 
   const r = await RewardModel.create({
     CustomerId: req.body.customerId,
@@ -54,7 +68,7 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
   //@ts-expect-error
-  res.send(await RewardModel.findAll({ where: { "$Customer.referral_code$": req.params.code, claimed: false }, include: [{ model: CustomerModel } ] }));
+  res.send(await RewardModel.findAll({ where: { "$Customer.referral_code$": req.params.code, claimed: false }, include: [{ model: CustomerModel }] }));
 }));
 
 rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
