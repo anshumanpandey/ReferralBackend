@@ -52,8 +52,11 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
-  //@ts-expect-error
-  res.send(await RewardModel.findAll({ where: { "$Customer.referral_code$": req.params.code, claimed: false }, include: [{ model: CustomerModel }] }));
+  const filters = { "$Customer.referral_code$": req.params.code, claimed: false }
+  if (req.query.referredByCode) {
+    filters["$Customer.referral_code$"] = req.query.referredByCode.toString()
+  }
+  res.send(await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }] }));
 }));
 
 rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
