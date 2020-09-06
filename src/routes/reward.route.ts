@@ -31,25 +31,10 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId } })
 
   if (!customer) throw new ApiError("Customer not found")
-  if (!referredCustomer) throw new ApiError("Referred Customer not found")
 
   //@ts-expect-error
   const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{ model: UserModel, attributes: [] }] })
   if (!program) throw new ApiError("No active program found for this plugin key")
-
-  //@ts-expect-error
-  const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id, ReferralProgramId: program.id } })
-  if (!reward) {
-    await RewardModel.create({
-      CustomerId: referredCustomer.id,
-      rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
-      claimed: false,
-      storeCredit: program.creditToAward || 0,
-      ReferralProgramId: program.id,
-      ...req.body,
-      rewardCode: MakeId(),
-    })
-  }
 
   const r = await RewardModel.create({
     CustomerId: req.body.customerId,
@@ -62,7 +47,7 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
     ...req.body,
   })
 
-  res.send({ id: r.id });
+  res.send({ id: r.id,  });
 }));
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
