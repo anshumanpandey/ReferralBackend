@@ -26,7 +26,6 @@ rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: 
 
 rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
-  console.log(req.body)
 
   const customer = await CustomerModel.findOne({ where: { id: req.body.customerId }})
   const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }})
@@ -43,7 +42,8 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
     rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
     claimed: false,
     rewardCode: MakeId(),
-    storeCredit: program.creditToAward || 0,
+    discountAmount: program.friendDiscountAmount,
+    discountUnit: program.friendDiscountUnit,
     ReferralProgramId: program.id,
     ...req.body,
   })
