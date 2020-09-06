@@ -26,6 +26,7 @@ rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: 
 
 rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
+  console.log(req.body)
 
   const customer = await CustomerModel.findOne({ where: { id: req.body.customerId }})
   const referredCustomer = await CustomerModel.findOne({ where: { id: req.body.referredCustomerId }})

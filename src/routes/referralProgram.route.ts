@@ -74,41 +74,49 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
   //@ts-expect-error
   const oldCustomers = customers.filter(c => c.ReferredBy)
 
+  const averageCartNewCustomer = newCustomers.reduce((total, customer) => {
+    //@ts-expect-error
+    total = total + customer.Orders.reduce((total, order) => {
+      total = total + order.orderAmount
+      return total
+    }, 0)
+    return total
+  }, 0) / (newCustomers.length || 1)
+
+  const totalRevenueNewCustomerReferred = newCustomers.reduce((total, customer) => {
+    //@ts-expect-error
+    total = total + customer.Orders.reduce((total, order) => {
+      total = total + order.orderAmount
+      return total
+    }, 0)
+    return total
+  }, 0)
+
+  const totalRevenueFromExistingCustomerUsingStoredCredit = oldCustomers.reduce((total, customer) => {
+    //@ts-expect-error
+    total = total + customer.Orders.filter(o => o.Reward && o.Reward.rewardType == REWARD_TYPE_ENUM.STORED_CREDIT).reduce((total, order) => {
+      total = total + order.orderAmount
+      return total
+    }, 0)
+    return total
+  }, 0)
+
+  const totalRevenue = orders.reduce((total, order) => {
+    total = order.orderAmount + total
+    return total
+  }, 0)
+
   const response = {
     customersAmount: customers.length,
     sponsors: newCustomers.length,
-    averageCartNewCustomer: newCustomers.reduce((total, customer) => {
-      //@ts-expect-error
-      total = total + customer.Orders.reduce((total, order) => {
-        total = total + order.orderAmount
-        return total
-      }, 0)
-      return total
-    }, 0) / (newCustomers.length || 1),
-    totalRevenueNewCustomerReferred: newCustomers.reduce((total, customer) => {
-      //@ts-expect-error
-      total = total + customer.Orders.reduce((total, order) => {
-        total = total + order.orderAmount
-        return total
-      }, 0)
-      return total
-    }, 0),
-    totalRevenueFromExistingCustomerUsingStoredCredit: oldCustomers.reduce((total, customer) => {
-      //@ts-expect-error
-      total = total + customer.Orders.filter(o => o.Reward && o.Reward.rewardType == REWARD_TYPE_ENUM.STORED_CREDIT).reduce((total, order) => {
-        total = total + order.orderAmount
-        return total
-      }, 0)
-      return total
-    }, 0),
+    averageCartNewCustomer: averageCartNewCustomer.toFixed(2),
+    totalRevenueNewCustomerReferred: totalRevenueNewCustomerReferred.toFixed(2),
+    totalRevenueFromExistingCustomerUsingStoredCredit: totalRevenueFromExistingCustomerUsingStoredCredit.toFixed(2),
     credits: rewards.reduce((total, reward) => {
       total = (reward.storeCredit || 0) + total
       return total
     }, 0),
-    totalRevenue: orders.reduce((total, order) => {
-      total = order.orderAmount + total
-      return total
-    }, 0),
+    totalRevenue: totalRevenue.toFixed(2),
     totalUsedCredits: rewards.filter(r => r?.claimed == true).reduce((total, reward) => {
       total = (reward.storeCredit || 0) + total
       return total
