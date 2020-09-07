@@ -70,9 +70,9 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
     OrderModel.findAll({ where: { ...customerWhereFilter, ...timeFilters }, include: [{ model: ReferralProgramModel, include: [{ model: UserModel, attributes: []}] ,attributes: []}] }),
   ])
   //@ts-expect-error
-  const newCustomers = customers.filter(c => !c.ReferredBy)
+  const newCustomers = customers.filter(c => c.ReferredBy)
   //@ts-expect-error
-  const oldCustomers = customers.filter(c => c.ReferredBy)
+  const oldCustomers = customers.filter(c => !c.ReferredBy)
 
   const averageCartNewCustomer = newCustomers.reduce((total, customer) => {
     //@ts-expect-error
