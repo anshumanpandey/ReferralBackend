@@ -126,7 +126,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
       return total
     }, 0) || 0,
     //@ts-expect-error
-    leaderboard: customers.sort((a,b) => b.Customers.length - a.Customers.length).slice(0, 3),
+    leaderboard: customers.filter(c => c.isSponsor == true).sort((a,b) => b.Customers.length - a.Customers.length).slice(0, 3).filter(c => c.Customers.length != 0),
   }
 
   res.send(response);
