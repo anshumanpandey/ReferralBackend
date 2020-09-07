@@ -12,6 +12,7 @@ import { CustomerModel } from '../models/customer.model';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import MakeId from '../utils/MakeId';
 import { UserModel } from '../models/user.model';
+import { ProductModel } from '../models/product.model';
 
 export const rewardRoutes = express();
 
@@ -36,19 +37,37 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
   const program = await ReferralProgramModel.findOne({ where: { "$User.pluginKey$": req.query.pluginKey, isActive: true }, include: [{ model: UserModel, attributes: [] }] })
   if (!program) throw new ApiError("No active program found for this plugin key")
 
-  const r = await RewardModel.create({
-    CustomerId: req.body.customerId,
-    rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.DISCOUNT,
-    claimed: false,
-    discountAmount: program.friendDiscountAmount,
-    discountUnit: program.friendDiscountUnit,
-    ReferralProgramId: program.id,
-    ...req.body,
-    freeDeliver: program.freeDeliver,
-    rewardCode: MakeId(),
+  await sequelize.transaction(async (transaction) => {
+
+    const reward = {
+      CustomerId: req.body.customerId,
+      claimed: false,
+      ReferralProgramId: program.id,
+      ...req.body,
+      freeDeliver: program.freeDeliver,
+      rewardCode: MakeId(),
+    }
+
+    if (program.friendRewardType == REWARD_TYPE_ENUM.DISCOUNT) {
+      reward.discountAmount = program.friendDiscountAmount;
+      reward.discountUnit = program.friendDiscountUnit;
+      reward.rewardType = REWARD_TYPE_ENUM.DISCOUNT;
+    } else {
+      reward.rewardType = REWARD_TYPE_ENUM.FREE_PRODUCT;
+    }
+
+    const r = await RewardModel.create(reward, { transaction })
+
+    if (program.friendRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT) {
+      //@ts-expect-error
+      const product = await program.getFreeProductForFriend({ transaction })
+      //@ts-expect-error
+      await r.setFreeProduct(product[0], { transaction })
+    }
+  
+    res.send({ id: r.id });
   })
 
-  res.send({ id: r.id,  });
 }));
 
 rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
