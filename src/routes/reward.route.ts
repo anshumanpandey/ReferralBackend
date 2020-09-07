@@ -40,11 +40,12 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
     CustomerId: req.body.customerId,
     rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.DISCOUNT,
     claimed: false,
-    rewardCode: MakeId(),
     discountAmount: program.friendDiscountAmount,
     discountUnit: program.friendDiscountUnit,
     ReferralProgramId: program.id,
     ...req.body,
+    freeDeliver: program.freeDeliver,
+    rewardCode: MakeId(),
   })
 
   res.send({ id: r.id,  });
@@ -54,7 +55,11 @@ rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
   if ((await PluginKeyExist(req.query)) == false) throw new ApiError("Plugin key not found")
   const filters = { "$Customer.referral_code$": req.params.code, claimed: false }
   if (req.query.referredByCode) {
-    filters["$Customer.referral_code$"] = req.query.referredByCode.toString()
+    //@ts-expect-error
+    const referredCustomer = await CustomerModel.findOne({ referral_code: req.query.referredByCode.toString()})
+    if (!referredCustomer) throw new ApiError("Referred Customer not found")
+    //@ts-expect-error
+    await CustomerModel.update({ ReferredBy: req.query.referredByCode.toString() }, { where: { referral_code: req.params.code })
   }
   res.send(await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }] }));
 }));

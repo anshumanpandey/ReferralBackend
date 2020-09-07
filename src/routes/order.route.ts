@@ -111,6 +111,7 @@ orderRoutes.post('/', validateParams(checkSchema({
           ReferralProgramId: program.id,
           ...req.body,
           rewardCode: MakeId(),
+          freeDeliver: program.freeDeliver,
         }, { transaction })
       }
     }
