@@ -38,7 +38,7 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
 
   const r = await RewardModel.create({
     CustomerId: req.body.customerId,
-    rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
+    rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.DISCOUNT,
     claimed: false,
     rewardCode: MakeId(),
     discountAmount: program.friendDiscountAmount,
