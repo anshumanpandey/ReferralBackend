@@ -63,7 +63,7 @@ rewardRoutes.post('/single', asyncHandler(async (req, res) => {
       const product = await program.getFreeProductForFriend({ transaction })
       //@ts-expect-error
       await r.addFreeProduct(product[0], { transaction })
-      return res.send({ id: r.id, FreeProduct: product[0].name });
+      return res.send({ id: r.id, freeProduct: product[0].name });
     }
   
     res.send({ id: r.id });
