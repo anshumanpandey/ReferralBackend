@@ -81,7 +81,15 @@ rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
     //@ts-expect-error
     await CustomerModel.update({ ReferredBy: referredCustomer.id }, { where: { referral_code: req.params.code }});
   }
-  res.send(await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }] }));
+  const result = await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }, { model: ProductModel, as: "FreeProduct"  }] })
+  res.send(result.map(r => {
+    const j = r.toJSON()
+    //@ts-expect-error
+    j.freeProduct = j.FreeProduct[0].name
+    //@ts-expect-error
+    delete j.FreeProduct;
+    return j
+  }));
 }));
 
 rewardRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
