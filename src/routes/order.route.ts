@@ -79,8 +79,7 @@ orderRoutes.post('/', validateParams(checkSchema({
       const referredCustomer = await CustomerModel.findOne({ where: { referral_code: req.body.referredCustomerCode }, transaction })
       if (!referredCustomer) throw new ApiError("Referred customer not found")
 
-      //@ts-expect-error
-      await clamingCustomer.setReferredByCustomer(referredCustomer, { transaction })
+      await clamingCustomer.update({ ReferredBy: referredCustomer.id}, { transaction })
 
       const friendRewardData: any = {
         CustomerId: clamingCustomer.id,

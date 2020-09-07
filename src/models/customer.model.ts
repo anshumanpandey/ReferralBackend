@@ -60,7 +60,6 @@ CustomerModel.hasMany(OrderModel, {
 OrderModel.belongsTo(CustomerModel);
 
 CustomerModel.hasMany(CustomerModel, {
-  as: 'ReferredByCustomer',
   foreignKey: {
     allowNull: true,
     name: "ReferredBy",
