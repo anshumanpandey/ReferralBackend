@@ -59,7 +59,7 @@ rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
     const referredCustomer = await CustomerModel.findOne({ referral_code: req.query.referredByCode.toString()})
     if (!referredCustomer) throw new ApiError("Referred Customer not found")
     //@ts-expect-error
-    await CustomerModel.update({ ReferredBy: req.query.referredByCode.toString() }, { where: { referral_code: req.params.code }});
+    await CustomerModel.update({ ReferredBy: referredCustomer.id }, { where: { referral_code: req.params.code }});
   }
   res.send(await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }] }));
 }));
