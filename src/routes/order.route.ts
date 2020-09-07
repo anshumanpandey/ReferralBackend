@@ -81,38 +81,29 @@ orderRoutes.post('/', validateParams(checkSchema({
 
       await clamingCustomer.update({ ReferredBy: referredCustomer.id}, { transaction })
 
-      const friendRewardData: any = {
-        CustomerId: clamingCustomer.id,
-        rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
-        claimed: false,
-        ReferralProgramId: program.id,
-        rewardCode: MakeId(),
-      }
-      if (program.friendRewardType == REWARD_TYPE_ENUM.DISCOUNT) {
-        friendRewardData.discountAmount = program.friendDiscountAmount
-        friendRewardData.discountUnit = program.friendDiscountUnit
-      }
-  
-      /*const friendReward = await RewardModel.create(friendRewardData, { transaction })
-      if (program.friendRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT) {
-        const product = await ProductModel.findOne({ where: { id: }})
-        friendReward.addFreeProduct(re)
-      }*/
-
       sponsorId = referredCustomer.id
       //@ts-expect-error
       const reward = await RewardModel.findOne({ where: { CustomerId: referredCustomer.id, ReferralProgramId: program.id, }, transaction })
       if (!reward) {
-        await RewardModel.create({
+        const customerReward = {
           CustomerId: referredCustomer.id,
-          rewardType: req.body.rewardPromotionMethod || REWARD_TYPE_ENUM.STORED_CREDIT,
+          rewardType: program.customerRewardType,
           claimed: false,
-          storeCredit: program.creditToAward || 0,
           ReferralProgramId: program.id,
           ...req.body,
           rewardCode: MakeId(),
           freeDeliver: program.freeDeliver,
-        }, { transaction })
+        }
+        if (program.customerRewardType == REWARD_TYPE_ENUM.STORED_CREDIT) {
+          customerReward.storeCredit = program.creditToAward || 0
+        }
+        const reward = await RewardModel.create(customerReward, { transaction })
+
+        if (program.customerRewardType == REWARD_TYPE_ENUM.FREE_PRODUCT) {
+          const product = await program.getFreeProductForCustomer({ transaction })
+          //@ts-expect-error
+          await reward.addFreeProduct(product[0], { transaction })
+        }
       }
     }
 
