@@ -17,12 +17,12 @@ import { ProductModel } from '../models/product.model';
 export const rewardRoutes = express();
 
 rewardRoutes.get('/admin/rewards', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  res.send(await RewardModel.findAll({ include: [{ model: CustomerModel }] }));
+  res.send(await RewardModel.findAll({ include: [{ model: ProductModel, required: false, as: "FreeProduct" },{ model: CustomerModel }] }));
 }));
 
 rewardRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
   //@ts-expect-error
-  res.send(await RewardModel.findAll({ include: [{ model: ReferralProgramModel, where: { UserId: req.user.id } }] }));
+  res.send(await RewardModel.findAll({ include: [{ model: ProductModel, as: "FreeProduct", required: false },{ model: ReferralProgramModel, where: { UserId: req.user.id } }] }));
 }));
 
 rewardRoutes.post('/single', asyncHandler(async (req, res) => {

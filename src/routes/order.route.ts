@@ -17,7 +17,7 @@ import { ProductModel } from '../models/product.model';
 export const orderRoutes = express();
 
 orderRoutes.get('/', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), asyncHandler(async (req, res) => {
-  res.send(await OrderModel.findAll({}));
+  res.send(await OrderModel.findAll({ include: [{ model: CustomerModel, include: [{ model: CustomerModel }] }]}));
 }));
 
 orderRoutes.post('/', validateParams(checkSchema({
