@@ -8,7 +8,7 @@ import { ApiError } from '../utils/ApiError';
 import { GiftModel } from '../models/gift.model';
 import sequelize from '../utils/DB';
 import multer from 'multer';
-import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
+import { UserModel, USER_ROLE_ENUM, userHasActiveProgram } from '../models/user.model';
 import { Op, or } from 'sequelize';
 import PluginKeyExist from '../utils/PluginKeyExist';
 import { CustomerModel } from '../models/customer.model';
@@ -133,7 +133,7 @@ referralProgramRoutes.get('/resume', jwt({ secret: process.env.JWT_SECRET || 'aa
 
 }));
 
-referralProgramRoutes.post('/changeActiveStatus', validateParams(checkSchema({
+referralProgramRoutes.post('/changeActiveStatus', jwt({ secret: process.env.JWT_SECRET || 'aa', algorithms: ['HS256'] }), validateParams(checkSchema({
   programId: {
     in: ['body'],
     exists: {
@@ -155,12 +155,15 @@ referralProgramRoutes.post('/changeActiveStatus', validateParams(checkSchema({
     },
   },
 })), asyncHandler(async (req, res) => {
-  const [hasActive, programFound] = await Promise.all([
-    await ReferralProgramModel.findOne({ where: { isActive: true } }),
-    await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
-  ])
-  if (hasActive && req.body.isActive == true) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
+  //@ts-expect-error
+  const UserId = req.user.id;
+  const programFound = await await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
   if (!programFound) throw new ApiError("Program not found")
+  //@ts-expect-error
+  const user = await programFound.getUser()
+
+  if (userHasActiveProgram(user)) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
+
 
   programFound.update({ isActive: req.body.isActive })
   res.send({});

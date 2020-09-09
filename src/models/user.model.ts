@@ -70,3 +70,10 @@ UserModel.hasMany(ReferralProgramModel, {
   }
 });
 ReferralProgramModel.belongsTo(UserModel);
+
+export const userHasActiveProgram = async (user: UserInstance) => {
+  //@ts-expect-error
+  const programs = await ReferralProgramModel.findAll({ where: { UserId: user.id}})
+  return programs.some(p => p.isActive == true)
+  
+}
