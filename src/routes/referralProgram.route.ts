@@ -155,14 +155,13 @@ referralProgramRoutes.post('/changeActiveStatus', jwt({ secret: process.env.JWT_
     },
   },
 })), asyncHandler(async (req, res) => {
-  //@ts-expect-error
-  const UserId = req.user.id;
   const programFound = await await ReferralProgramModel.findOne({ where: { id: req.body.programId } })
   if (!programFound) throw new ApiError("Program not found")
   //@ts-expect-error
   const user = await programFound.getUser()
+  const hasActive = await userHasActiveProgram(user)
 
-  if (userHasActiveProgram(user)) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
+  if (hasActive == true && req.body.isActive == true) throw new ApiError("There is a Referral Program currently active. Deactivate it before activate another one")
 
 
   programFound.update({ isActive: req.body.isActive })
