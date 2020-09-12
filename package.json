@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rm -rf dist/* && ./node_modules/.bin/tsc",
-    "build": "tsc && cp -rf package.json dist/package.json",
+    "create": "tsc && cp -rf package.json dist/package.json",
     "start": "ts-node .",
     "dev": "ts-node ."
   },
