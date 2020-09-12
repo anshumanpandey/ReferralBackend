@@ -84,8 +84,11 @@ rewardRoutes.get('/:code', asyncHandler(async (req, res) => {
   const result = await RewardModel.findAll({ where: filters, include: [{ model: CustomerModel }, { model: ProductModel, as: "FreeProduct"  }] })
   res.send(result.map(r => {
     const j = r.toJSON()
-    //@ts-expect-error
-    j.freeProduct = j.FreeProduct[0].name
+      //@ts-expect-error
+      if (j.FreeProduct[0]) {
+      //@ts-expect-error
+      j.freeProduct = j.FreeProduct[0].name
+    }
     //@ts-expect-error
     delete j.FreeProduct;
     return j
