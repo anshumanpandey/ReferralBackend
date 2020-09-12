@@ -5,8 +5,8 @@
   "scripts": {
     "prebuild": "rm -rf dist/* && ./node_modules/.bin/tsc",
     "create": "tsc && cp -rf package.json dist/package.json",
-    "start": "ts-node .",
-    "dev": "ts-node ."
+    "start": "ts-node ./src",
+    "dev": "ts-node ./src"
   },
   "keywords": [],
   "author": "",
