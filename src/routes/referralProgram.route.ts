@@ -202,6 +202,7 @@ referralProgramRoutes.post('/', jwt({ secret: process.env.JWT_SECRET || 'aa', al
     emailFrom: req.body.emailFrom || null,
     emailSubject: req.body.emailSubject || null,
     creditToAward: req.body.creditToAward,
+    colorCode: req.body.colorCode,
 
     destinationLink: req.body.destinationLink,
 

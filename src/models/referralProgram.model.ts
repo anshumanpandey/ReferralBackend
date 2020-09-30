@@ -27,6 +27,7 @@ interface ReferralProgramAttributes {
   name: string,
   description: string
   isActive: boolean,
+  colorCode?: string
   endDate?: Date,
   emailTemplate?: string,
   emailFrom?: string,
@@ -70,6 +71,11 @@ export const ReferralProgramModel = sequelize.define<ReferralProgram>("ReferralP
   description: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  colorCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: null
   },
   
   endDate: {
