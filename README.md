@@ -9,7 +9,7 @@
 - `DB_NAME=`[DB NAME]
 - `DB_PASSWORD=`[DB PASS]
 - `DB_USERNAME=`[DB USERNAME]
-- `PORT=`[PORT TO RUN THE SERVER - DEFAULT TO 5000]
+- `PORT=`[PORT TO RUN THE SERVER - DEFAULT TO 5050]
 
 ##### How to run with pm2
 1. Run on server `npm install pm2 -g`

@@ -8,7 +8,7 @@ bootstrap()
 .then(() => sequelize.sync())
 .then(() => SeedSuperadmin())
 .then(() => {
-    const server = app.listen(parseInt(process.env.PORT || '5000') || 5000, '0.0.0.0', () => {
+    const server = app.listen(parseInt(process.env.PORT || '5050') || 5050, '0.0.0.0', () => {
         const {port, address} = server.address() as AddressInfo;
         console.log('Server listening on:','http://' + address + ':'+port);
     });
