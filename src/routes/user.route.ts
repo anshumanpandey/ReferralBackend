@@ -11,7 +11,6 @@ import { hash, compare } from "bcrypt"
 import { UserModel, USER_ROLE_ENUM } from '../models/user.model';
 import { validateParams } from '../middlewares/routeValidation.middleware';
 import { ApiError } from '../utils/ApiError';
-import { sendForgotPassword } from '../utils/Mail';
 import multer from 'multer';
 
 let storage = multer.diskStorage({
